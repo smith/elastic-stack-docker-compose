@@ -1,0 +1,38 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: ${env:OTEL_COLLECTOR_HOST}:${env:OTEL_COLLECTOR_PORT_GRPC}
+      http:
+        endpoint: ${env:OTEL_COLLECTOR_HOST}:${env:OTEL_COLLECTOR_PORT_HTTP}
+        cors:
+          allowed_origins:
+            - "http://*"
+            - "https://*"
+
+processors:
+  batch:
+
+connectors:
+  spanmetrics:
+
+exporters:
+  debug:
+    verbosity: detailed
+  otlp/elastic:
+    endpoint: elasticsearch:9200
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [debug, spanmetrics, otlp/elastic]
+    metrics:
+      receivers: [otlp, spanmetrics]
+      processors: [batch]
+      exporters: [debug, otlp/elastic]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [debug, otlp/elastic]
