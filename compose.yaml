@@ -1,10 +1,9 @@
 # Copyright Nathan L Smith <smith@nlsmith.com>
 # SPDX-License-Identifier: Apache-2.0
 
-# TODO: Otel export from docker compose
+# TODO: Otel export logs? from docker compose
 services:
   elasticsearch:
-    # TODO: fix kibana_system user
     container_name: elasticsearch
     depends_on:
       setup_certs:
@@ -24,7 +23,7 @@ services:
       - logger.org.elasticsearch=WARN
       - node.name=elastic-stack-docker-compose-es-node-0
       # TODO: otel export from elasticsearch
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otelcol:4317
+      - OTEL_EXPORTER_OTLP_ENDPOINT=otelcol:4317
       - OTEL_INSTRUMENTATION_ELASTICSEARCH_ENABLED=true
       - xpack.license.self_generated.type=${ES_LICENSE}
       - xpack.security.enabled=true
@@ -53,10 +52,15 @@ services:
       retries: 120
   kibana:
     # TODO: SSL
+    # TODO: Kibana is currently running with legacy OpenSSL providers enabled! For details and instructions on how to disable see https://www.elastic.co/guide/en/kibana/current/production.html#openssl-legacy-provider
+    # TODO: Error initializing AI assistant resources: Platinum, Enterprise or trial license needed
+    # TODO :Session cookies will be transmitted over insecure connections. This is not recommended.
     container_name: kibana
     depends_on:
       elasticsearch:
         condition: service_healthy
+      setup_kibana_user:
+        condition: service_completed_successfully
     image: ${KIBANA_IMAGE}
     restart: unless-stopped
     volumes:
@@ -67,6 +71,7 @@ services:
     environment:
       - SERVERNAME=kibana
       - ELASTICSEARCH_HOSTS=https://elasticsearch:${ES_PORT}
+      - ELASTICSEARCH_IGNOREVERSIONMISMATCH=true
       - ELASTICSEARCH_USERNAME=kibana_system
       - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD}
       - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=config/certs/ca/ca.crt
@@ -126,7 +131,7 @@ services:
       - ELASTIC_AGENT_OTEL
   setup_certs:
     container_name: "setup_certs"
-    image: docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION}
+    image: ${ES_IMAGE}
     volumes:
       - certs:/usr/share/elasticsearch/config/certs
     user: "0"
@@ -166,7 +171,7 @@ services:
     volumes:
       - certs:/usr/share/elasticsearch/config/certs
       - etc:/etc/elastic
-    command: > 
+    command: >
         bash -c '
           cat <<'EOF' > /etc/elastic/api_key_create_params.json
                 {
@@ -192,6 +197,25 @@ services:
             -X POST https://elasticsearch:${ES_PORT}/_security/api_key \
             --data @/etc/elastic/api_key_create_params.json | \
           jq -r .encoded | (echo -ne "exporters:\n  elasticsearch:\n    api_key: " && cat) > /etc/elastic/api_key.yaml
+        '
+  setup_kibana_user:
+    container_name: "setup_kibana_user"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    image: ${ES_IMAGE}
+    volumes:
+      - certs:/usr/share/elasticsearch/config/certs
+    command: >
+        bash -c '
+          if [ x${ELASTIC_PASSWORD} == x ]; then
+            echo "Set the ELASTIC_PASSWORD environment variable in the .env file";
+            exit 1;
+          elif [ x${KIBANA_PASSWORD} == x ]; then
+            echo "Set the KIBANA_PASSWORD environment variable in the .env file";
+            exit 1;
+          fi;
+          curl -s -X POST --cacert config/certs/ca/ca.crt -u "elastic:${ELASTIC_PASSWORD}" -H "Content-Type: application/json" https://elasticsearch:${ES_PORT}/_security/user/kibana_system/_password -d "{\"password\":\"${KIBANA_PASSWORD}\"}"
         '
 volumes:
   certs:

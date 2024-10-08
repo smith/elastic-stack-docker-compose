@@ -18,6 +18,10 @@ Runs:
 * `cd elastic-stack-docker-compose`
 * `docker compose up`
 
+#### Docker Comppose metrics
+
+To collect [Docker Compose metrics](https://docs.docker.com/engine/cli/otel/), set the environment variable `DOCKER_CLI_OTEL_EXPORTER_OTLP_ENDPOINT=localhost:4317`. These metrics go to the `metrics-generic-default` data stream with `service.name=docker`.
+
 ## Upstream docker-compose.yml configurations
 
 This compose.yaml is based on these sources:
