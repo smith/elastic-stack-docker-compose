@@ -2,7 +2,7 @@
 receivers:
   # [File Log Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/filelogreceiver/README.md)
   filelog/platformlogs:
-    include: [ /hostfs/var/log/*.log ]
+    include: [ /var/log/*.log ]
     retry_on_failure:
       enabled: true
     start_at: end
@@ -106,30 +106,15 @@ exporters:
     #verbosity: basic 
     verbosity: normal
   # [Elasticsearch exporter](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/exporter/elasticsearchexporter/README.md)
-  elasticsearch/ecs:
+  elasticsearch:
     endpoint: https://elasticsearch:9200
-   # api_key: M3gycGFKSUJ4cUZ0SDBtSVZHaEs6ZDBGQV9yaGhTUTJkSFJlLTM4TVpGdw==
+    # api_key: (loaded from /etc/elastic/api_key.yaml)
     tls:
       cert_file: /usr/share/elastic-agent/config/certs/elasticsearch/elasticsearch.crt
       key_file: /usr/share/elastic-agent/config/certs/elasticsearch/elasticsearch.key
       ca_file: /usr/share/elastic-agent/config/certs/ca/ca.crt
     mapping:
       mode: ecs
-    logs_dynamic_index:
-      enabled: true
-    metrics_dynamic_index:
-      enabled: true
-    traces_dynamic_index:
-      enabled: true
-  elasticsearch/otel:
-    endpoint: https://elasticsearch:9200
-   # api_key: M3gycGFKSUJ4cUZ0SDBtSVZHaEs6ZDBGQV9yaGhTUTJkSFJlLTM4TVpGdw==
-    tls:
-      cert_file: /usr/share/elastic-agent/config/certs/elasticsearch/elasticsearch.crt
-      key_file: /usr/share/elastic-agent/config/certs/elasticsearch/elasticsearch.key
-      ca_file: /usr/share/elastic-agent/config/certs/ca/ca.crt
-    mapping:
-      mode: otel
     logs_dynamic_index:
       enabled: true
     metrics_dynamic_index:
@@ -173,4 +158,4 @@ service:
     logs:
       development: true
       disable_stacktrace: true
-      level: WARN
+      level: INFO

@@ -12,12 +12,6 @@ Runs:
 
 * [Docker Compose](https://docs.docker.com/compose/)
 
-### Installation 
-
-```bash
-curl && unzip && cd elastic-stack-docker-compose && docker compose up
-```
-
 ### Usage
 
 * Clone this repository

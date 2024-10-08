@@ -4,7 +4,6 @@
 # TODO: Otel export from docker compose
 services:
   elasticsearch:
-    scale: 0
     # TODO: fix kibana_system user
     container_name: elasticsearch
     depends_on:
@@ -53,7 +52,6 @@ services:
       timeout: 10s
       retries: 120
   kibana:
-    scale: 0
     # TODO: SSL
     container_name: kibana
     depends_on:
@@ -94,7 +92,6 @@ services:
       timeout: 10s
       retries: 120 
   otelcol:
-    # TODO: get API key from file
     # TODO: self monitoring
     # TODO: configure for APM
     container_name: "otelcol"
@@ -109,15 +106,14 @@ services:
         limits:
           memory: 200M
     restart: unless-stopped
-    #command: ["--config", "/etc/otelcol-config.yml", "--config", "yaml:exporters::elasticsearch::api_key"]
-    command: ["--config", "/etc/otelcol-config.yml"]
+    command: ["--config", "/etc/otelcol-config.yml", "--config", "/etc/elastic/api_key.yaml"]
     user: 0:0
     volumes:
       - ${HOST_FILESYSTEM}:/hostfs:ro
       - ${DOCKER_SOCK}:/var/run/docker.sock:ro
       - ${OTEL_COLLECTOR_CONFIG}:/etc/otelcol-config.yml
-      - apikey:/usr/share/elastic-agent/config/apikey
       - certs:/usr/share/elastic-agent/config/certs
+      - etc:/etc/elastic
     ports:
       - "${OTEL_COLLECTOR_PORT_GRPC}:${OTEL_COLLECTOR_PORT_GRPC}"
       - "${OTEL_COLLECTOR_PORT_HTTP}:${OTEL_COLLECTOR_PORT_HTTP}"
@@ -168,11 +164,11 @@ services:
         condition: service_healthy
     user: "0"
     volumes:
-      - apikey:/usr/share/elasticsearch/config/apikey
       - certs:/usr/share/elasticsearch/config/certs
+      - etc:/etc/elastic
     command: > 
         bash -c '
-          cat <<'EOF' > /usr/share/elasticsearch/config/apikey/api_key_create_params.json
+          cat <<'EOF' > /etc/elastic/api_key_create_params.json
                 {
                   "name": "elastic-stack-docker-compose-api-key",
                   "role_descriptors": {       
@@ -189,14 +185,20 @@ services:
                       }
               }
         EOF
-          test -f /usr/share/elasticsearch/config/apikey/api_key || curl --cacert /usr/share/elasticsearch/config/certs/ca/ca.crt --user elastic:${ELASTIC_PASSWORD} -s -H "Content-Type: application/json" -X POST https://elasticsearch:${ES_PORT}/_security/api_key --data @/usr/share/elasticsearch/config/apikey/api_key_create_params.json | jq -r .encoded > /usr/share/elasticsearch/config/apikey/api_key
+          test -f /etc/elastic/api_key.yaml || \
+          curl -s --cacert /usr/share/elasticsearch/config/certs/ca/ca.crt \
+            --user elastic:${ELASTIC_PASSWORD} \
+            -H "Content-Type: application/json" \
+            -X POST https://elasticsearch:${ES_PORT}/_security/api_key \
+            --data @/etc/elastic/api_key_create_params.json | \
+          jq -r .encoded | (echo -ne "exporters:\n  elasticsearch:\n    api_key: " && cat) > /etc/elastic/api_key.yaml
         '
 volumes:
   certs:
     driver: local
+  etc:
+    driver: local
   esdata:
     driver: local
   kibanadata:
-    driver: local
-  apikey:
     driver: local
