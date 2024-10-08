@@ -1,7 +1,8 @@
 # Copyright Nathan L Smith <smith@nlsmith.com>
 # SPDX-License-Identifier: Apache-2.0
 
-# TODO: Otel export logs? from docker compose
+# TODO: Otel export logs from docker compose?
+# TODO: Export all docker compose logs
 services:
   elasticsearch:
     container_name: elasticsearch
@@ -111,6 +112,16 @@ services:
       resources:
         limits:
           memory: 200M
+    environment:
+    - ELASTIC_AGENT_OTEL
+    - ELASTIC_PASSWORD
+    - ENVOY_PORT
+    - ES_PORT
+    - KIBANA_PORT
+    - HOST_FILESYSTEM
+    - OTEL_COLLECTOR_HOST
+    - OTEL_COLLECTOR_PORT_GRPC
+    - OTEL_COLLECTOR_PORT_HTTP
     restart: unless-stopped
     command: ["--config", "/etc/otelcol-config.yml", "--config", "/etc/elastic/api_key.yaml"]
     user: 0:0
@@ -123,13 +134,6 @@ services:
     ports:
       - "${OTEL_COLLECTOR_PORT_GRPC}:${OTEL_COLLECTOR_PORT_GRPC}"
       - "${OTEL_COLLECTOR_PORT_HTTP}:${OTEL_COLLECTOR_PORT_HTTP}"
-    environment:
-      - ENVOY_PORT
-      - HOST_FILESYSTEM
-      - OTEL_COLLECTOR_HOST
-      - OTEL_COLLECTOR_PORT_GRPC
-      - OTEL_COLLECTOR_PORT_HTTP
-      - ELASTIC_AGENT_OTEL
   setup_certs:
     container_name: "setup_certs"
     image: ${ES_IMAGE}
@@ -190,14 +194,17 @@ services:
                           "transient_metadata": { "enabled": true }}
                       }
               }
-        EOF
+          EOF
           test -f /etc/elastic/api_key.yaml || \
-          curl -s --cacert /usr/share/elasticsearch/config/certs/ca/ca.crt \
+          curl --silent -X POST \
+            --cacert /usr/share/elasticsearch/config/certs/ca/ca.crt \
             --user elastic:${ELASTIC_PASSWORD} \
             -H "Content-Type: application/json" \
-            -X POST https://elasticsearch:${ES_PORT}/_security/api_key \
+            https://elasticsearch:${ES_PORT}/_security/api_key \
             --data @/etc/elastic/api_key_create_params.json | \
-          jq -r .encoded | (echo -ne "exporters:\n  elasticsearch:\n    api_key: " && cat) > /etc/elastic/api_key.yaml
+          jq --raw-output .encoded | \
+          (echo -ne "exporters:\n  elasticsearch:\n    api_key: " && cat) \
+          > /etc/elastic/api_key.yaml
         '
   setup_kibana_user:
     container_name: "setup_kibana_user"
@@ -209,14 +216,19 @@ services:
       - certs:/usr/share/elasticsearch/config/certs
     command: >
         bash -c '
-          if [ x${ELASTIC_PASSWORD} == x ]; then
-            echo "Set the ELASTIC_PASSWORD environment variable in the .env file";
+          if [ -z "${ELASTIC_PASSWORD}" ]; then
+            echo "Set the ELASTIC_PASSWORD environment variable in the .env file" >&2;
             exit 1;
-          elif [ x${KIBANA_PASSWORD} == x ]; then
-            echo "Set the KIBANA_PASSWORD environment variable in the .env file";
+          elif [ -z "${KIBANA_PASSWORD}" ]; then
+            echo "Set the KIBANA_PASSWORD environment variable in the .env file" >&2;
             exit 1;
           fi;
-          curl -s -X POST --cacert config/certs/ca/ca.crt -u "elastic:${ELASTIC_PASSWORD}" -H "Content-Type: application/json" https://elasticsearch:${ES_PORT}/_security/user/kibana_system/_password -d "{\"password\":\"${KIBANA_PASSWORD}\"}"
+          curl --silent -X POST \
+            --cacert config/certs/ca/ca.crt \
+            --user "elastic:${ELASTIC_PASSWORD}" \
+            -H "Content-Type: application/json" \
+            https://elasticsearch:${ES_PORT}/_security/user/kibana_system/_password \
+            --data "{\"password\":\"${KIBANA_PASSWORD}\"}"
         '
 volumes:
   certs:

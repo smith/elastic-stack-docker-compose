@@ -39,6 +39,26 @@ receivers:
       network:
       processes:
       load:
+  # [HTTP Check Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/httpcheckreceiver/README.md)
+  # TODO: Route checks to different data streams
+  httpcheck:
+    targets:
+      - endpoint: https://elastic:${env:ELASTIC_PASSWORD}@elasticsearch:${env:ES_PORT}
+        tls:
+          cert_file: /usr/share/elastic-agent/config/certs/elasticsearch/elasticsearch.crt
+          key_file: /usr/share/elastic-agent/config/certs/elasticsearch/elasticsearch.key
+          ca_file: /usr/share/elastic-agent/config/certs/ca/ca.crt
+      - endpoint: http://kibana:${env:KIBANA_PORT}/api/status
+        tls:
+          cert_file: /usr/share/elastic-agent/config/certs/elasticsearch/elasticsearch.crt
+          key_file: /usr/share/elastic-agent/config/certs/elasticsearch/elasticsearch.key
+          ca_file: /usr/share/elastic-agent/config/certs/ca/ca.crt
+      # TODO: fix http check for collector (See https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/extension/healthcheckextension/README.md)
+      # - endpoint: http://${env:OTEL_COLLECTOR_HOST}:${env:OTEL_COLLECTOR_PORT_GRPC}
+      #   tls:
+      #     cert_file: /usr/share/elastic-agent/config/certs/elasticsearch/elasticsearch.crt
+      #     key_file: /usr/share/elastic-agent/config/certs/elasticsearch/elasticsearch.key
+      #     ca_file: /usr/share/elastic-agent/config/certs/ca/ca.crt
   # [OTLP Receiver](https://github.com/open-telemetry/opentelemetry-collector/blob/main/receiver/otlpreceiver/README.md)
   otlp/fromsdk:
     protocols:
@@ -138,6 +158,12 @@ service:
     metrics/hostmetrics:
       receivers: [hostmetrics/system]
       processors: [elasticinframetrics, resourcedetection, attributes/dataset, resource/process]
+      exporters:
+      - elasticsearch
+      - debug
+    metrics/httpcheck:
+      receivers: [httpcheck]
+      processors: []
       exporters:
       - elasticsearch
       - debug

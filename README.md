@@ -20,7 +20,13 @@ Runs:
 
 #### Docker Comppose metrics
 
-To collect [Docker Compose metrics](https://docs.docker.com/engine/cli/otel/), set the environment variable `DOCKER_CLI_OTEL_EXPORTER_OTLP_ENDPOINT=localhost:4317`. These metrics go to the `metrics-generic-default` data stream with `service.name=docker` and `service.name=docker-compose`..
+To collect [Docker Compose metrics](https://docs.docker.com/engine/cli/otel/), set the environment variable `DOCKER_CLI_OTEL_EXPORTER_OTLP_ENDPOINT=localhost:4317`. These metrics go to the `metrics-generic-default` data stream with `service.name=docker` and `service.name=docker-compose`.
+
+## Data collected
+
+* Any OpenTelemetry log, metric, or trace data sent to localhost:4317-4318 (use `host.docker.internal` from containers)
+* [HTTP checks](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/httpcheckreceiver/README.md) for Elasticsearch and Kibana. These metrics go to the `metrics-generic-default` data stream with `http` and `httpcheck` fields.
+* [Host metrics](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/hostmetricsreceiver). These are processed with the [Elastic Infra Metrics Processor](https://github.com/elastic/opentelemetry-collector-components/blob/main/processor/elasticinframetricsprocessor/README.md)
 
 ## Upstream docker-compose.yml configurations
 
