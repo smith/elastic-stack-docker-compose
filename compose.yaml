@@ -2,101 +2,96 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # TODO: Otel export logs from docker compose?
-# TODO: Export all docker compose logs
 services:
   elasticsearch:
+    # TODO: otel export from elasticsearch
     container_name: elasticsearch
     depends_on:
       setup_certs:
         condition: service_completed_successfully
-    image: ${ES_IMAGE}
-    restart: unless-stopped
-    volumes:
-      - certs:/usr/share/elasticsearch/config/certs
-      - esdata:/usr/share/elasticsearch/data
-    ports:
-      - ${ES_PORT}:9200
     environment:
-      - bootstrap.memory_lock=true
-      - cluster.name=${ES_CLUSTER_NAME}
-      - discovery.type=single-node
-      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
-      - logger.org.elasticsearch=WARN
-      - node.name=elastic-stack-docker-compose-es-node-0
-      # TODO: otel export from elasticsearch
-      - OTEL_EXPORTER_OTLP_ENDPOINT=otelcol:4317
-      - OTEL_INSTRUMENTATION_ELASTICSEARCH_ENABLED=true
-      - xpack.license.self_generated.type=${ES_LICENSE}
-      - xpack.security.enabled=true
-      - xpack.security.http.ssl.certificate_authorities=certs/ca/ca.crt
-      - xpack.security.http.ssl.certificate=certs/elasticsearch/elasticsearch.crt
-      - xpack.security.http.ssl.enabled=true
-      - xpack.security.http.ssl.key=certs/elasticsearch/elasticsearch.key
-      - xpack.security.transport.ssl.certificate_authorities=certs/ca/ca.crt
-      - xpack.security.transport.ssl.certificate=certs/elasticsearch/elasticsearch.crt
-      - xpack.security.transport.ssl.enabled=true
-      - xpack.security.transport.ssl.key=certs/elasticsearch/elasticsearch.key
-      - xpack.security.transport.ssl.verification_mode=certificate
+    - bootstrap.memory_lock=true
+    - cluster.name=${ES_CLUSTER_NAME}
+    - discovery.type=single-node
+    - ELASTIC_PASSWORD
+    - logger.org.elasticsearch=WARN
+    - node.name=elastic-stack-docker-compose-es-node-0
+    - OTEL_EXPORTER_OTLP_ENDPOINT=otelcol:4317
+    - OTEL_INSTRUMENTATION_ELASTICSEARCH_ENABLED=true
+    - xpack.license.self_generated.type=${ES_LICENSE}
+    - xpack.security.enabled=true
+    - xpack.security.http.ssl.certificate_authorities=certs/ca/ca.crt
+    - xpack.security.http.ssl.certificate=certs/elasticsearch/elasticsearch.crt
+    - xpack.security.http.ssl.enabled=true
+    - xpack.security.http.ssl.key=certs/elasticsearch/elasticsearch.key
+    - xpack.security.transport.ssl.certificate_authorities=certs/ca/ca.crt
+    - xpack.security.transport.ssl.certificate=certs/elasticsearch/elasticsearch.crt
+    - xpack.security.transport.ssl.enabled=true
+    - xpack.security.transport.ssl.key=certs/elasticsearch/elasticsearch.key
+    - xpack.security.transport.ssl.verification_mode=certificate
+    healthcheck:
+      interval: 2s
+      retries: 120
+      test:
+      - CMD-SHELL
+      - curl -s --cacert config/certs/ca/ca.crt https://localhost:9200 | grep -q 'missing authentication credentials'
+      timeout: 10s
+    image: ${ES_IMAGE}
     mem_limit: ${MEM_LIMIT}
+    ports:
+    - ${ES_PORT}:${ES_PORT}
+    restart: unless-stopped
     ulimits:
       memlock:
         soft: -1
         hard: -1
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "curl -s --cacert config/certs/ca/ca.crt https://localhost:9200 | grep -q 'missing authentication credentials'",
-        ]
-      interval: 2s
-      timeout: 10s
-      retries: 120
+    volumes:
+    - certs:/usr/share/elasticsearch/config/certs
+    - esdata:/usr/share/elasticsearch/data
   kibana:
     # TODO: SSL
     # TODO: Kibana is currently running with legacy OpenSSL providers enabled! For details and instructions on how to disable see https://www.elastic.co/guide/en/kibana/current/production.html#openssl-legacy-provider
     # TODO: Error initializing AI assistant resources: Platinum, Enterprise or trial license needed
     # TODO :Session cookies will be transmitted over insecure connections. This is not recommended.
+    # TODO generate encryption keys
+    # TODO: Configure to export APM/otel data
     container_name: kibana
     depends_on:
       elasticsearch:
         condition: service_healthy
       setup_kibana_user:
         condition: service_completed_successfully
+    environment:
+    - ELASTIC_APM_ACTIVE=true
+    - ELASTIC_APM_SERVER_URL=http://otelcol:${OTEL_COLLECTOR_PORT_HTTP}
+    - ELASTIC_APM_TRANSACTION_SAMPLE_RATE=1
+    - ELASTICSEARCH_HOSTS=https://elasticsearch:${ES_PORT}
+    - ELASTICSEARCH_IGNOREVERSIONMISMATCH=true
+    - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD}
+    - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=config/certs/ca/ca.crt
+    - ELASTICSEARCH_USERNAME=kibana_system
+    - LOGGING_ROOT_LEVEL=warn
+    - SERVERNAME=kibana
+    - XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=0c4fb61f013d771f43d321e5b2484f4d
+    - XPACK_REPORTING_ENCRYPTIONKEY=369ecfa55ee4b9e8c3d5481c6589287a
+    - XPACK_REPORTING_ROLES_ENABLED=false
+    - XPACK_SCREENSHOTTING_BROWSER_CHROMIUM_DISABLESANDBOX=true
+    - XPACK_SECURITY_ENCRYPTIONKEY=944c9b01e335cf7eebcda4413797f494
+    healthcheck:
+      interval: 10s
+      retries: 120
+      test:
+      - CMD-SHELL
+      - curl -s http://localhost:5601/api/status
+      timeout: 10s
     image: ${KIBANA_IMAGE}
+    mem_limit: ${MEM_LIMIT}
+    ports:
+    - ${KIBANA_PORT}:${KIBANA_PORT}
     restart: unless-stopped
     volumes:
-      - certs:/usr/share/kibana/config/certs
-      - kibanadata:/usr/share/kibana/data
-    ports:
-      - ${KIBANA_PORT}:5601
-    environment:
-      - SERVERNAME=kibana
-      - ELASTICSEARCH_HOSTS=https://elasticsearch:${ES_PORT}
-      - ELASTICSEARCH_IGNOREVERSIONMISMATCH=true
-      - ELASTICSEARCH_USERNAME=kibana_system
-      - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD}
-      - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=config/certs/ca/ca.crt
-      - LOGGING_ROOT_LEVEL=warn
-      # TODO: APM/otel
-      # - ELASTIC_APM_ACTIVE=true
-      # - ELASTIC_APM_SERVER_URL=http://otelcol:${OTEL_COLLECTOR_PORT_HTTP}
-      # - ELASTIC_APM_TRANSACTION_SAMPLE_RATE=1
-      - XPACK_REPORTING_ROLES_ENABLED=false
-      - XPACK_SCREENSHOTTING_BROWSER_CHROMIUM_DISABLESANDBOX=true
-      # TODO generate these
-      - XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=0c4fb61f013d771f43d321e5b2484f4d
-      - XPACK_REPORTING_ENCRYPTIONKEY=369ecfa55ee4b9e8c3d5481c6589287a
-      - XPACK_SECURITY_ENCRYPTIONKEY=944c9b01e335cf7eebcda4413797f494
-    mem_limit: ${MEM_LIMIT}
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "curl -s http://localhost:5601/api/status"
-        ]
-      interval: 10s
-      timeout: 10s
-      retries: 120 
+    - certs:/usr/share/kibana/config/certs
+    - kibanadata:/usr/share/kibana/data
   otelcol:
     # TODO: self monitoring
     # TODO: configure for APM
@@ -123,49 +118,21 @@ services:
     - OTEL_COLLECTOR_PORT_GRPC
     - OTEL_COLLECTOR_PORT_HTTP
     restart: unless-stopped
-    command: ["--config", "/etc/otelcol-config.yml", "--config", "/etc/elastic/api_key.yaml"]
+    command:
+    - --config
+    - /etc/otelcol-config.yml
+    - --config
+    - /etc/elastic/api_key.yaml
     user: 0:0
     volumes:
-      - ${HOST_FILESYSTEM}:/hostfs:ro
-      - ${DOCKER_SOCK}:/var/run/docker.sock:ro
-      - ${OTEL_COLLECTOR_CONFIG}:/etc/otelcol-config.yml
-      - certs:/usr/share/elastic-agent/config/certs
-      - etc:/etc/elastic
+    - ${HOST_FILESYSTEM}:/hostfs:ro
+    - ${DOCKER_SOCK}:/var/run/docker.sock:ro
+    - ${OTEL_COLLECTOR_CONFIG}:/etc/otelcol-config.yml
+    - certs:/usr/share/elastic-agent/config/certs
+    - etc:/etc/elastic
     ports:
-      - "${OTEL_COLLECTOR_PORT_GRPC}:${OTEL_COLLECTOR_PORT_GRPC}"
-      - "${OTEL_COLLECTOR_PORT_HTTP}:${OTEL_COLLECTOR_PORT_HTTP}"
-  setup_certs:
-    container_name: "setup_certs"
-    image: ${ES_IMAGE}
-    volumes:
-      - certs:/usr/share/elasticsearch/config/certs
-    user: "0"
-    command: >
-      bash -c '
-        if [ ! -f config/certs/ca.zip ]; then
-          echo "Creating CA" >&2;
-          bin/elasticsearch-certutil ca --silent --pem -out config/certs/ca.zip;
-          unzip config/certs/ca.zip -d config/certs;
-        fi;
-        if [ ! -f config/certs/certs.zip ]; then
-          echo "Creating certs" >&2;
-          echo -ne \
-          "instances:\n"\
-          "  - name: elasticsearch\n"\
-          "    dns:\n"\
-          "      - elasticsearch\n"\
-          "      - localhost\n"\
-          "    ip:\n"\
-          "      - 127.0.0.1\n"\
-          > config/certs/instances.yml;
-          bin/elasticsearch-certutil cert --silent --pem -out config/certs/certs.zip --in config/certs/instances.yml --ca-cert config/certs/ca/ca.crt --ca-key config/certs/ca/ca.key;
-          unzip config/certs/certs.zip -d config/certs;
-        fi;
-        chown -R root:root config/certs;
-        find . -type d -exec chmod 750 \{\} \;;
-        find . -type f -exec chmod 640 \{\} \;;
-        exit 0
-      '
+    - "${OTEL_COLLECTOR_PORT_GRPC}:${OTEL_COLLECTOR_PORT_GRPC}"
+    - "${OTEL_COLLECTOR_PORT_HTTP}:${OTEL_COLLECTOR_PORT_HTTP}"
   setup_api_key:
     container_name: "setup_api_key"
     image: pnnlmiscscripts/curl-jq
@@ -174,8 +141,8 @@ services:
         condition: service_healthy
     user: "0"
     volumes:
-      - certs:/usr/share/elasticsearch/config/certs
-      - etc:/etc/elastic
+    - certs:/usr/share/elasticsearch/config/certs
+    - etc:/etc/elastic
     command: >
         bash -c '
           cat <<'EOF' > /etc/elastic/api_key_create_params.json
@@ -206,6 +173,38 @@ services:
           (echo -ne "exporters:\n  elasticsearch:\n    api_key: " && cat) \
           > /etc/elastic/api_key.yaml
         '
+  setup_certs:
+    container_name: "setup_certs"
+    image: ${ES_IMAGE}
+    volumes:
+    - certs:/usr/share/elasticsearch/config/certs
+    user: "0"
+    command: >
+      bash -c '
+        if [ ! -f config/certs/ca.zip ]; then
+          echo "Creating CA" >&2;
+          bin/elasticsearch-certutil ca --silent --pem -out config/certs/ca.zip;
+          unzip config/certs/ca.zip -d config/certs;
+        fi;
+        if [ ! -f config/certs/certs.zip ]; then
+          echo "Creating certs" >&2;
+          echo -ne \
+          "instances:\n"\
+          "  - name: elasticsearch\n"\
+          "    dns:\n"\
+          "      - elasticsearch\n"\
+          "      - localhost\n"\
+          "    ip:\n"\
+          "      - 127.0.0.1\n"\
+          > config/certs/instances.yml;
+          bin/elasticsearch-certutil cert --silent --pem -out config/certs/certs.zip --in config/certs/instances.yml --ca-cert config/certs/ca/ca.crt --ca-key config/certs/ca/ca.key;
+          unzip config/certs/certs.zip -d config/certs;
+        fi;
+        chown -R root:root config/certs;
+        find . -type d -exec chmod 750 \{\} \;;
+        find . -type f -exec chmod 640 \{\} \;;
+        exit 0
+      '
   setup_kibana_user:
     container_name: "setup_kibana_user"
     depends_on:
@@ -213,7 +212,7 @@ services:
         condition: service_healthy
     image: ${ES_IMAGE}
     volumes:
-      - certs:/usr/share/elasticsearch/config/certs
+    - certs:/usr/share/elasticsearch/config/certs
     command: >
         bash -c '
           if [ -z "${ELASTIC_PASSWORD}" ]; then
@@ -233,9 +232,9 @@ services:
 volumes:
   certs:
     driver: local
-  etc:
-    driver: local
   esdata:
+    driver: local
+  etc:
     driver: local
   kibanadata:
     driver: local

@@ -4,6 +4,7 @@
 
 Runs:
 
+* [Elastic APM server](https://www.elastic.co/guide/en/observability/current/apm-getting-started-apm-server.html) _(this is temporary until the Elastic OpenTelemetry collector can do the processing that is done by APM server. This work is in progress.)
 * [Elasticsearch](https://www.elastic.co/elasticsearch)
 * [The Elastic Distribution of OpenTelemetry Collector](https://github.com/elastic/opentelemetry)
 * [Kibana](https://www.elastic.co/kibana)
@@ -24,7 +25,8 @@ To collect [Docker Compose metrics](https://docs.docker.com/engine/cli/otel/), s
 
 ## Data collected
 
-* Any OpenTelemetry log, metric, or trace data sent to localhost:4317-4318 (use `host.docker.internal` from containers)
+* Any OpenTelemetry log or metric data sent to localhost:4317-4318 (use `host.docker.internal` from containers)
+* Any trace data is sent to the APM server
 * [HTTP checks](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/httpcheckreceiver/README.md) for Elasticsearch and Kibana. These metrics go to the `metrics-generic-default` data stream with `http` and `httpcheck` fields.
 * [Host metrics](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/hostmetricsreceiver). These are processed with the [Elastic Infra Metrics Processor](https://github.com/elastic/opentelemetry-collector-components/blob/main/processor/elasticinframetricsprocessor/README.md)
 
