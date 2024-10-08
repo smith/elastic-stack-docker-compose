@@ -1,15 +1,15 @@
+# [Receivers](https://github.com/open-telemetry/opentelemetry-collector/tree/main/receiver#readme)
 receivers:
-  # Receiver for platform specific log files
+  # [File Log Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/filelogreceiver/README.md)
   filelog/platformlogs:
-    include: [ /var/log/*.log ]
+    include: [ /hostfs/var/log/*.log ]
     retry_on_failure:
       enabled: true
     start_at: end
-
-  # Receiver for CPU, Disk, Memory, and Filesystem metrics
+  # [Host Metrics Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/README.md)
   hostmetrics/system:
     collection_interval: 30s
-    root_path: /hostfs
+    root_path: /
     scrapers:
       disk:
       filesystem:
@@ -39,7 +39,7 @@ receivers:
       network:
       processes:
       load:
-
+  # [OTLP Receiver](https://github.com/open-telemetry/opentelemetry-collector/blob/main/receiver/otlpreceiver/README.md)
   otlp/fromsdk:
     protocols:
       grpc:
@@ -50,9 +50,11 @@ receivers:
           allowed_origins:
             - "http://*"
             - "https://*"
-
+# [Processors](https://github.com/open-telemetry/opentelemetry-collector/tree/main/processor#readme)
 processors:
+  # [Elastic Infra Metrics Processor](https://github.com/elastic/opentelemetry-collector-components/blob/main/processor/elasticinframetricsprocessor/README.md)
   elasticinframetrics:
+  # [Resource Detection Processor](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/processor/resourcedetectionprocessor/README.md)
   resourcedetection:
     detectors: ["system"]
     system:
@@ -84,23 +86,27 @@ processors:
           enabled: true
         os.type:
           enabled: true
+  # [Attributes Processor](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/processor/attributesprocessor/README.md)
   attributes/dataset:
     actions:
       - key: event.dataset
         from_attribute: data_stream.dataset
         action: upsert
+  # [Resource Processor](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/resourceprocessor)
   resource/process:
     attributes:
       - key: process.executable.name
         action: delete
       - key: process.executable.path
         action: delete
-
+# [Exporters](https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter#readme)        
 exporters:
+  # [Debug exporter](https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/debugexporter/README.md)
   debug:
-    verbosity: basic 
-
-  elasticsearch:
+    #verbosity: basic 
+    verbosity: normal
+  # [Elasticsearch exporter](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/exporter/elasticsearchexporter/README.md)
+  elasticsearch/ecs:
     endpoint: https://elasticsearch:9200
    # api_key: M3gycGFKSUJ4cUZ0SDBtSVZHaEs6ZDBGQV9yaGhTUTJkSFJlLTM4TVpGdw==
     tls:
@@ -115,34 +121,54 @@ exporters:
       enabled: true
     traces_dynamic_index:
       enabled: true
-
+  elasticsearch/otel:
+    endpoint: https://elasticsearch:9200
+   # api_key: M3gycGFKSUJ4cUZ0SDBtSVZHaEs6ZDBGQV9yaGhTUTJkSFJlLTM4TVpGdw==
+    tls:
+      cert_file: /usr/share/elastic-agent/config/certs/elasticsearch/elasticsearch.crt
+      key_file: /usr/share/elastic-agent/config/certs/elasticsearch/elasticsearch.key
+      ca_file: /usr/share/elastic-agent/config/certs/ca/ca.crt
+    mapping:
+      mode: otel
+    logs_dynamic_index:
+      enabled: true
+    metrics_dynamic_index:
+      enabled: true
+    traces_dynamic_index:
+      enabled: true
+# [Service Section](https://opentelemetry.io/docs/collector/configuration/#service)
 service:
   pipelines:
     traces/fromsdk:
       receivers: [otlp/fromsdk]
       processors: []
-      exporters: [elasticsearch, debug]
-
+      exporters: 
+      - elasticsearch
+      - debug
     metrics/fromsdk:
       receivers: [otlp/fromsdk]
       processors: []
-      exporters: [elasticsearch, debug]
-
+      exporters: 
+      - elasticsearch
+      - debug
     metrics/hostmetrics:
       receivers: [hostmetrics/system]
       processors: [elasticinframetrics, resourcedetection, attributes/dataset, resource/process]
-      exporters: [elasticsearch, debug]
-
+      exporters:
+      - elasticsearch
+      - debug
     logs/fromsdk:
       receivers: [otlp/fromsdk]
       processors: []
-      exporters: [elasticsearch, debug]
-
+      exporters:
+      - elasticsearch
+      - debug
     logs/platformlogs:
       receivers: [filelog/platformlogs]
       processors: [resourcedetection]
-      exporters: [elasticsearch, debug]
-
+      exporters: 
+      - elasticsearch
+      - debug
   telemetry:
     logs:
       development: true

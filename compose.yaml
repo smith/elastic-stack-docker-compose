@@ -1,15 +1,11 @@
 # Copyright Nathan L Smith <smith@nlsmith.com>
 # SPDX-License-Identifier: Apache-2.0
 
-x-default-logging: &logging
-  driver: "json-file"
-  options:
-    max-size: "5m"
-    max-file: "2"
-    tag: "{{.Name}}"
-
+# TODO: Otel export from docker compose
 services:
   elasticsearch:
+    scale: 0
+    # TODO: fix kibana_system user
     container_name: elasticsearch
     depends_on:
       setup_certs:
@@ -28,6 +24,7 @@ services:
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
       - logger.org.elasticsearch=WARN
       - node.name=elastic-stack-docker-compose-es-node-0
+      # TODO: otel export from elasticsearch
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otelcol:4317
       - OTEL_INSTRUMENTATION_ELASTICSEARCH_ENABLED=true
       - xpack.license.self_generated.type=${ES_LICENSE}
@@ -56,6 +53,7 @@ services:
       timeout: 10s
       retries: 120
   kibana:
+    scale: 0
     # TODO: SSL
     container_name: kibana
     depends_on:
@@ -96,6 +94,9 @@ services:
       timeout: 10s
       retries: 120 
   otelcol:
+    # TODO: get API key from file
+    # TODO: self monitoring
+    # TODO: configure for APM
     container_name: "otelcol"
     image: ${COLLECTOR_CONTRIB_IMAGE}
     depends_on:
@@ -120,7 +121,6 @@ services:
     ports:
       - "${OTEL_COLLECTOR_PORT_GRPC}:${OTEL_COLLECTOR_PORT_GRPC}"
       - "${OTEL_COLLECTOR_PORT_HTTP}:${OTEL_COLLECTOR_PORT_HTTP}"
-    logging: *logging
     environment:
       - ENVOY_PORT
       - HOST_FILESYSTEM
