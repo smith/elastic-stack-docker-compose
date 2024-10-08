@@ -1,8 +1,95 @@
 # Copyright Nathan L Smith <smith@nlsmith.com>
 # SPDX-License-Identifier: Apache-2.0
 
+name: elastic-stack-docker-compose
+configs:
+  # [APM Server configuration](https://github.com/elastic/apm-server/blob/main/apm-server.yml)
+  apm-server.yml:
+    content: |
+      apm-server:
+        host: 0.0.0.0:${APM_SERVER_PORT}
+      output.elasticsearch:
+        hosts: ["https://elasticsearch:${ES_PORT}"]
+        protocol: "https"
+        ssl.certificate_authorities: ["config/certs/ca/ca.crt"]
+        ssl.certificate: "config/certs/elasticsearch/elasticsearch.crt"
+        ssl.enabled: true
+        ssl.key: "config/certs/elasticsearch/elasticsearch.key"
+        ssl.verification_mode: full
+        username: "elastic"
+        password: "${ELASTIC_PASSWORD}"
+  api_key_create_params.json:
+    content: |
+      {
+        "name": "elastic-stack-docker-compose-api-key",
+        "role_descriptors": {       
+          "standalone_agent": { 
+            "cluster": ["monitor"], 
+            "indices": [{
+              "names": ["logs-*-*", "metrics-*-*", "traces-*-*"], 
+              "privileges": ["auto_configure", "create_doc"], 
+              "allow_restricted_indices": false }],
+            "applications": [],
+            "run_as": [],
+            "metadata": {},
+            "transient_metadata": { "enabled": true }
+          }
+        }
+      }
+  # [Kibana configuration](https://github.com/elastic/kibana/blob/main/config/kibana.yml)
+  kibana.yml:
+    content: |
+      elastic.apm:
+        active: true
+        server_url: http://apmserver:${APM_SERVER_PORT}
+        transaction.sample.rate: 1
+      elasticsearch:
+        hosts: [ "https://elasticsearch:${ES_PORT}" ]
+        username: kibana_system
+        password: ${KIBANA_PASSWORD}
+        ssl:
+          certificate: config/certs/elasticsearch/elasticsearch.crt
+          certificateAuthorities: [ "config/certs/ca/ca.crt" ]
+          key: config/certs/elasticsearch/elasticsearch.key
+          verificationMode: full
+      logging.root.level: warn
+      monitoring.ui.container.elasticsearch.enabled: true
+      server:
+        host: "0.0.0.0"
+        shutdownTimeout: "5s"
+      xpack.encryptedSavedObjects.encryptionKey: 0c4fb61f013d771f43d321e5b2484f4d
+      xpack.reporting.encryptionKey: 369ecfa55ee4b9e8c3d5481c6589287a
+      xpack.reporting.roles.enabled: false
+      xpack.screenshotting.browser.chromium.disableSandbox: true
+      xpack.security.encryptionKey: 944c9b01e335cf7eebcda4413797f494
 # TODO: Otel export logs from docker compose?
 services:
+  apmserver:
+    scale: 0
+    command: apm-server run
+    configs:
+    - source: apm-server.yml
+      target: /usr/share/apm-server/apm-server.yml
+    container_name: apmserver
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      setup_api_key:
+        condition: service_completed_successfully
+      setup_certs:
+        condition: service_completed_successfully
+    deploy:
+      resources:
+        limits:
+          memory: 200M
+    environment: {}
+    image: ${APM_SERVER_IMAGE}
+    ports:
+    - ${APM_SERVER_PORT}:${APM_SERVER_PORT}
+    restart: unless-stopped
+    user: "0"
+    volumes:
+    - certs:/usr/share/apm-server/config/certs
   elasticsearch:
     # TODO: otel export from elasticsearch
     container_name: elasticsearch
@@ -55,28 +142,16 @@ services:
     # TODO :Session cookies will be transmitted over insecure connections. This is not recommended.
     # TODO generate encryption keys
     # TODO: Configure to export APM/otel data
+    configs:
+      - source: kibana.yml
+        target: /usr/share/kibana/config/kibana.yml
     container_name: kibana
     depends_on:
       elasticsearch:
         condition: service_healthy
       setup_kibana_user:
         condition: service_completed_successfully
-    environment:
-    - ELASTIC_APM_ACTIVE=true
-    - ELASTIC_APM_SERVER_URL=http://otelcol:${OTEL_COLLECTOR_PORT_HTTP}
-    - ELASTIC_APM_TRANSACTION_SAMPLE_RATE=1
-    - ELASTICSEARCH_HOSTS=https://elasticsearch:${ES_PORT}
-    - ELASTICSEARCH_IGNOREVERSIONMISMATCH=true
-    - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD}
-    - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=config/certs/ca/ca.crt
-    - ELASTICSEARCH_USERNAME=kibana_system
-    - LOGGING_ROOT_LEVEL=warn
-    - SERVERNAME=kibana
-    - XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=0c4fb61f013d771f43d321e5b2484f4d
-    - XPACK_REPORTING_ENCRYPTIONKEY=369ecfa55ee4b9e8c3d5481c6589287a
-    - XPACK_REPORTING_ROLES_ENABLED=false
-    - XPACK_SCREENSHOTTING_BROWSER_CHROMIUM_DISABLESANDBOX=true
-    - XPACK_SECURITY_ENCRYPTIONKEY=944c9b01e335cf7eebcda4413797f494
+    environment: {}
     healthcheck:
       interval: 10s
       retries: 120
@@ -93,6 +168,7 @@ services:
     - certs:/usr/share/kibana/config/certs
     - kibanadata:/usr/share/kibana/data
   otelcol:
+    scale: 0
     # TODO: self monitoring
     # TODO: configure for APM
     # TODO: health check for otelcol
@@ -134,6 +210,9 @@ services:
     - "${OTEL_COLLECTOR_PORT_GRPC}:${OTEL_COLLECTOR_PORT_GRPC}"
     - "${OTEL_COLLECTOR_PORT_HTTP}:${OTEL_COLLECTOR_PORT_HTTP}"
   setup_api_key:
+    configs:
+    - source: api_key_create_params.json
+      target: /etc/elastic/api_key_create_params.json
     container_name: "setup_api_key"
     image: pnnlmiscscripts/curl-jq
     depends_on:
@@ -145,23 +224,6 @@ services:
     - etc:/etc/elastic
     command: >
         bash -c '
-          cat <<'EOF' > /etc/elastic/api_key_create_params.json
-                {
-                  "name": "elastic-stack-docker-compose-api-key",
-                  "role_descriptors": {       
-                      "standalone_agent": { 
-                          "cluster": ["monitor"], 
-                          "indices": [{
-                              "names": ["logs-*-*", "metrics-*-*", "traces-*-*"], 
-                              "privileges": ["auto_configure", "create_doc"], 
-                              "allow_restricted_indices": false }],
-                          "applications": [],
-                          "run_as": [],
-                          "metadata": {},
-                          "transient_metadata": { "enabled": true }}
-                      }
-              }
-          EOF
           test -f /etc/elastic/api_key.yaml || \
           curl --silent -X POST \
             --cacert /usr/share/elasticsearch/config/certs/ca/ca.crt \

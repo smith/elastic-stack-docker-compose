@@ -4,7 +4,7 @@
 
 Runs:
 
-* [Elastic APM server](https://www.elastic.co/guide/en/observability/current/apm-getting-started-apm-server.html) _(this is temporary until the Elastic OpenTelemetry collector can do the processing that is done by APM server. This work is in progress.)
+* [Elastic APM server](https://www.elastic.co/guide/en/observability/current/apm-getting-started-apm-server.html) _(this is temporary until the Elastic OpenTelemetry collector can do the processing that is done by APM server. This work is in progress.)_
 * [Elasticsearch](https://www.elastic.co/elasticsearch)
 * [The Elastic Distribution of OpenTelemetry Collector](https://github.com/elastic/opentelemetry)
 * [Kibana](https://www.elastic.co/kibana)
