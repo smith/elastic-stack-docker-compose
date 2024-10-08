@@ -99,6 +99,7 @@ services:
   otelcol:
     # TODO: self monitoring
     # TODO: configure for APM
+    # TODO: health check for otelcol
     container_name: "otelcol"
     image: ${COLLECTOR_CONTRIB_IMAGE}
     depends_on:
