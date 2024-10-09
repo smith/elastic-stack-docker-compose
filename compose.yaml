@@ -1,6 +1,9 @@
 # Copyright Nathan L Smith <smith@nlsmith.com>
 # SPDX-License-Identifier: Apache-2.0
 
+# TODO: Otel export logs from docker compose?
+
+# [Compose file](https://docs.docker.com/reference/compose-file/) for Elastic stack
 name: elastic-stack-docker-compose
 configs:
   apm-server.yml:
@@ -31,14 +34,15 @@ configs:
     file: config/elasticsearch.yml
   kibana.yml:
     file: config/kibana.yml
+  otelcol.yml:
+    file: config/otelcol.yml
   set-kibana-system-user-password.sh:
     file: scripts/set-kibana-system-user-password.sh
-# TODO: Otel export logs from docker compose?
 services:
   apmserver:
     configs:
     - source: apm-server.yml
-      target: /usr/share/apm-server/apm-server.yml
+      target: /usr/share/apm-server/config/apm-server.yml
     container_name: apmserver
     depends_on:
       elasticsearch:
@@ -131,8 +135,11 @@ services:
     # TODO: self monitoring
     # TODO: configure for APM
     # TODO: health check for otelcol
+    command: --config /etc/otelcol/config.yaml --config /etc/elastic/api_key.yaml
+    configs:
+    - source: otelcol.yml
+      target: /etc/otelcol/config.yaml
     container_name: "openstash"
-    image: ${COLLECTOR_CONTRIB_IMAGE}
     depends_on:
       elasticsearch:
         condition: service_healthy
@@ -149,25 +156,19 @@ services:
     - ES_PORT
     - KIBANA_PORT
     - HOST_FILESYSTEM
-    - OTEL_COLLECTOR_HOST
     - OTEL_COLLECTOR_PORT_GRPC
     - OTEL_COLLECTOR_PORT_HTTP
+    image: ${COLLECTOR_CONTRIB_IMAGE}
+    ports:
+    - "${OTEL_COLLECTOR_PORT_GRPC}:${OTEL_COLLECTOR_PORT_GRPC}"
+    - "${OTEL_COLLECTOR_PORT_HTTP}:${OTEL_COLLECTOR_PORT_HTTP}"
     restart: unless-stopped
-    command:
-    - --config
-    - /etc/otelcol-config.yml
-    - --config
-    - /etc/elastic/api_key.yaml
     user: 0:0
     volumes:
     - ${HOST_FILESYSTEM}:/hostfs:ro
     - ${DOCKER_SOCK}:/var/run/docker.sock:ro
-    - ${OTEL_COLLECTOR_CONFIG}:/etc/otelcol-config.yml
     - certs:/usr/share/elastic-agent/config/certs
     - etc:/etc/elastic
-    ports:
-    - "${OTEL_COLLECTOR_PORT_GRPC}:${OTEL_COLLECTOR_PORT_GRPC}"
-    - "${OTEL_COLLECTOR_PORT_HTTP}:${OTEL_COLLECTOR_PORT_HTTP}"
   setup_api_key:
     command: bash /usr/share/elasticsearch/bin/create-api-key.sh
     configs:

@@ -55,7 +55,7 @@ receivers:
           cert_file: /usr/share/elastic-agent/config/certs/elasticsearch/elasticsearch.crt
           key_file: /usr/share/elastic-agent/config/certs/elasticsearch/elasticsearch.key
       # TODO: fix http check for collector (See https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/extension/healthcheckextension/README.md)
-      # - endpoint: http://${env:OTEL_COLLECTOR_HOST}:${env:OTEL_COLLECTOR_PORT_GRPC}
+      # - endpoint: http://otelcol:${env:OTEL_COLLECTOR_PORT_GRPC}
       #   tls:
       #     ca_file: /usr/share/elastic-agent/config/certs/ca/ca.crt
       #     cert_file: /usr/share/elastic-agent/config/certs/elasticsearch/elasticsearch.crt
@@ -64,13 +64,13 @@ receivers:
   otlp/fromsdk:
     protocols:
       grpc:
-        endpoint: ${env:OTEL_COLLECTOR_HOST}:${env:OTEL_COLLECTOR_PORT_GRPC}
+        endpoint: otelcol:${env:OTEL_COLLECTOR_PORT_GRPC}
       http:
         cors:
           allowed_origins:
             - "http://*"
             - "https://*"
-        endpoint: ${env:OTEL_COLLECTOR_HOST}:${env:OTEL_COLLECTOR_PORT_HTTP}
+        endpoint: otelcol:${env:OTEL_COLLECTOR_PORT_HTTP}
 # [Processors](https://github.com/open-telemetry/opentelemetry-collector/tree/main/processor#readme)
 processors:
   # [Attributes Processor](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/processor/attributesprocessor/README.md)
@@ -126,7 +126,7 @@ processors:
 exporters:
   # [Debug exporter](https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/debugexporter/README.md)
   debug:
-    verbosity: normal
+    verbosity: basic
   # [Elasticsearch exporter](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/exporter/elasticsearchexporter/README.md)
   elasticsearch:
     endpoint: https://elasticsearch:9200
@@ -195,6 +195,5 @@ service:
         - otlp/fromsdk
   telemetry:
     logs:
-      development: true
       disable_stacktrace: true
       level: INFO
