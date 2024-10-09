@@ -3,21 +3,8 @@
 
 name: elastic-stack-docker-compose
 configs:
-  # [APM Server configuration](https://github.com/elastic/apm-server/blob/main/apm-server.yml)
   apm-server.yml:
-    content: |
-      apm-server:
-        host: 0.0.0.0:${APM_SERVER_PORT}
-      output.elasticsearch:
-        hosts: ["https://elasticsearch:${ES_PORT}"]
-        protocol: "https"
-        ssl.certificate_authorities: ["config/certs/ca/ca.crt"]
-        ssl.certificate: "config/certs/elasticsearch/elasticsearch.crt"
-        ssl.enabled: true
-        ssl.key: "config/certs/elasticsearch/elasticsearch.key"
-        ssl.verification_mode: full
-        username: "elastic"
-        password: "${ELASTIC_PASSWORD}"
+    file: config/apm-server.yml
   api_key_create_params.json:
     content: |
       {
@@ -36,37 +23,16 @@ configs:
           }
         }
       }
-  # [Kibana configuration](https://github.com/elastic/kibana/blob/main/config/kibana.yml)
+  create-certs.sh:
+    file: scripts/create-certs.sh
+  elasticsearch.yml:
+    file: config/elasticsearch.yml
   kibana.yml:
-    content: |
-      elastic.apm:
-        active: true
-        server_url: http://apmserver:${APM_SERVER_PORT}
-        transaction.sample.rate: 1
-      elasticsearch:
-        hosts: [ "https://elasticsearch:${ES_PORT}" ]
-        username: kibana_system
-        password: ${KIBANA_PASSWORD}
-        ssl:
-          certificate: config/certs/elasticsearch/elasticsearch.crt
-          certificateAuthorities: [ "config/certs/ca/ca.crt" ]
-          key: config/certs/elasticsearch/elasticsearch.key
-          verificationMode: full
-      logging.root.level: warn
-      monitoring.ui.container.elasticsearch.enabled: true
-      server:
-        host: "0.0.0.0"
-        shutdownTimeout: "5s"
-      xpack.encryptedSavedObjects.encryptionKey: 0c4fb61f013d771f43d321e5b2484f4d
-      xpack.reporting.encryptionKey: 369ecfa55ee4b9e8c3d5481c6589287a
-      xpack.reporting.roles.enabled: false
-      xpack.screenshotting.browser.chromium.disableSandbox: true
-      xpack.security.encryptionKey: 944c9b01e335cf7eebcda4413797f494
+    file: config/kibana.yml
 # TODO: Otel export logs from docker compose?
 services:
   apmserver:
     scale: 0
-    command: apm-server run
     configs:
     - source: apm-server.yml
       target: /usr/share/apm-server/apm-server.yml
@@ -82,7 +48,10 @@ services:
       resources:
         limits:
           memory: 200M
-    environment: {}
+    environment: 
+    - apm-server.host="0.0.0.0:${APM_SERVER_PORT}""
+    - output.elasticsearch.hosts="https://elasticsearch:${ES_PORT}"
+    - output.elasticsearch.password="${ELASTIC_PASSWORD}"
     image: ${APM_SERVER_IMAGE}
     ports:
     - ${APM_SERVER_PORT}:${APM_SERVER_PORT}
@@ -91,31 +60,17 @@ services:
     volumes:
     - certs:/usr/share/apm-server/config/certs
   elasticsearch:
-    # TODO: otel export from elasticsearch
+    # TODO: apm export from elasticsearch
+    configs:
+    - source: elasticsearch.yml
+      target: /usr/share/elasticsearch/config/elasticsearch.yml
     container_name: elasticsearch
     depends_on:
       setup_certs:
         condition: service_completed_successfully
     environment:
-    - bootstrap.memory_lock=true
-    - cluster.name=${ES_CLUSTER_NAME}
-    - discovery.type=single-node
-    - ELASTIC_PASSWORD
-    - logger.org.elasticsearch=WARN
-    - node.name=elastic-stack-docker-compose-es-node-0
-    - OTEL_EXPORTER_OTLP_ENDPOINT=otelcol:4317
-    - OTEL_INSTRUMENTATION_ELASTICSEARCH_ENABLED=true
-    - xpack.license.self_generated.type=${ES_LICENSE}
-    - xpack.security.enabled=true
-    - xpack.security.http.ssl.certificate_authorities=certs/ca/ca.crt
-    - xpack.security.http.ssl.certificate=certs/elasticsearch/elasticsearch.crt
-    - xpack.security.http.ssl.enabled=true
-    - xpack.security.http.ssl.key=certs/elasticsearch/elasticsearch.key
-    - xpack.security.transport.ssl.certificate_authorities=certs/ca/ca.crt
-    - xpack.security.transport.ssl.certificate=certs/elasticsearch/elasticsearch.crt
-    - xpack.security.transport.ssl.enabled=true
-    - xpack.security.transport.ssl.key=certs/elasticsearch/elasticsearch.key
-    - xpack.security.transport.ssl.verification_mode=certificate
+    - cluster.name="${ES_CLUSTER_NAME}"
+    - xpack.license.self_generated.type="${ES_LICENSE}"
     healthcheck:
       interval: 2s
       retries: 120
@@ -124,7 +79,7 @@ services:
       - curl -s --cacert config/certs/ca/ca.crt https://localhost:9200 | grep -q 'missing authentication credentials'
       timeout: 10s
     image: ${ES_IMAGE}
-    mem_limit: ${MEM_LIMIT}
+    mem_limit: ${ES_MEM_LIMIT}
     ports:
     - ${ES_PORT}:${ES_PORT}
     restart: unless-stopped
@@ -136,12 +91,11 @@ services:
     - certs:/usr/share/elasticsearch/config/certs
     - esdata:/usr/share/elasticsearch/data
   kibana:
-    # TODO: SSL
+     # TODO: SSL
     # TODO: Kibana is currently running with legacy OpenSSL providers enabled! For details and instructions on how to disable see https://www.elastic.co/guide/en/kibana/current/production.html#openssl-legacy-provider
     # TODO: Error initializing AI assistant resources: Platinum, Enterprise or trial license needed
     # TODO :Session cookies will be transmitted over insecure connections. This is not recommended.
     # TODO generate encryption keys
-    # TODO: Configure to export APM/otel data
     configs:
       - source: kibana.yml
         target: /usr/share/kibana/config/kibana.yml
@@ -151,7 +105,10 @@ services:
         condition: service_healthy
       setup_kibana_user:
         condition: service_completed_successfully
-    environment: {}
+    environment:
+    - ELASTIC_APM_SERVER_URL=http://apmserver:${APM_SERVER_PORT}
+    - ELASTICSEARCH_HOSTS=https://elasticsearch:${ES_PORT}
+    - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
     healthcheck:
       interval: 10s
       retries: 120
@@ -160,7 +117,7 @@ services:
       - curl -s http://localhost:5601/api/status
       timeout: 10s
     image: ${KIBANA_IMAGE}
-    mem_limit: ${MEM_LIMIT}
+    mem_limit: ${ES_MEM_LIMIT}
     ports:
     - ${KIBANA_PORT}:${KIBANA_PORT}
     restart: unless-stopped
@@ -172,7 +129,7 @@ services:
     # TODO: self monitoring
     # TODO: configure for APM
     # TODO: health check for otelcol
-    container_name: "otelcol"
+    container_name: "openstash"
     image: ${COLLECTOR_CONTRIB_IMAGE}
     depends_on:
       elasticsearch:
@@ -236,37 +193,16 @@ services:
           > /etc/elastic/api_key.yaml
         '
   setup_certs:
+    command: bash bin/create-certs.sh
+    configs:
+    - mode: 0700 
+      source: create-certs.sh
+      target: /usr/share/elasticsearch/bin/create-certs.sh
     container_name: "setup_certs"
     image: ${ES_IMAGE}
+    user: "0"
     volumes:
     - certs:/usr/share/elasticsearch/config/certs
-    user: "0"
-    command: >
-      bash -c '
-        if [ ! -f config/certs/ca.zip ]; then
-          echo "Creating CA" >&2;
-          bin/elasticsearch-certutil ca --silent --pem -out config/certs/ca.zip;
-          unzip config/certs/ca.zip -d config/certs;
-        fi;
-        if [ ! -f config/certs/certs.zip ]; then
-          echo "Creating certs" >&2;
-          echo -ne \
-          "instances:\n"\
-          "  - name: elasticsearch\n"\
-          "    dns:\n"\
-          "      - elasticsearch\n"\
-          "      - localhost\n"\
-          "    ip:\n"\
-          "      - 127.0.0.1\n"\
-          > config/certs/instances.yml;
-          bin/elasticsearch-certutil cert --silent --pem -out config/certs/certs.zip --in config/certs/instances.yml --ca-cert config/certs/ca/ca.crt --ca-key config/certs/ca/ca.key;
-          unzip config/certs/certs.zip -d config/certs;
-        fi;
-        chown -R root:root config/certs;
-        find . -type d -exec chmod 750 \{\} \;;
-        find . -type f -exec chmod 640 \{\} \;;
-        exit 0
-      '
   setup_kibana_user:
     container_name: "setup_kibana_user"
     depends_on:
@@ -277,6 +213,7 @@ services:
     - certs:/usr/share/elasticsearch/config/certs
     command: >
         bash -c '
+          set -x
           if [ -z "${ELASTIC_PASSWORD}" ]; then
             echo "Set the ELASTIC_PASSWORD environment variable in the .env file" >&2;
             exit 1;
@@ -292,6 +229,8 @@ services:
             --data "{\"password\":\"${KIBANA_PASSWORD}\"}"
         '
 volumes:
+  bin:
+    driver: local
   certs:
     driver: local
   esdata:

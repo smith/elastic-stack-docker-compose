@@ -1,6 +1,12 @@
 # Elastic Stack Docker Compose
 
-[Docker Compose](https://docs.docker.com/compose/) configuration to run the "ELK" stack components.
+[Docker Compose](https://docs.docker.com/compose/) configuration to run the [Elastic Stack](https://www.elastic.co/elastic-stack/) components.
+
+This is meant to be a development and demo environment to solve these problems:
+
+- Work on development of OpenTelemetry-related features in Elastic Observability
+- Run pre-release builds of components to preview upcoming features
+- Get an Elastic environment that can collect OpenTelemetry data up and running quickly
 
 Runs:
 
@@ -18,6 +24,10 @@ Runs:
 * Clone this repository
 * `cd elastic-stack-docker-compose`
 * `docker compose up`
+* Open http://localhost:5601
+* Log in with `elastic`/`changeme`
+* Adjust configuration in the files in this repository for your needs
+* If you have improvements or fixes, open a pull request to https://github.com/smith/elastic-stack-docker-compose
 
 #### Docker Comppose metrics
 
@@ -36,3 +46,7 @@ This compose.yaml is based on these sources:
 
 * [Elasticsearch](https://github.com/elastic/elasticsearch/blob/8b09e9119d17dcf82a67aaefdcd5ce224a5c8598/docs/reference/setup/install/docker/docker-compose.yml)
 * [OpenTelemetry Demo](https://github.com/elastic/opentelemetry-demo/blob/main/docker-compose.yml)
+
+## Why doesn't this use Kubernetes?
+
+If you need Kubernetes, you should use it. See the [Elastic Kubernetes documentation](https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-deploy-elasticsearch.html). This is a simpler environment meant to run on a single computer.
