@@ -23,16 +23,19 @@ configs:
           }
         }
       }
+  create-api-key.sh:
+    file: scripts/create-api-key.sh
   create-certs.sh:
     file: scripts/create-certs.sh
   elasticsearch.yml:
     file: config/elasticsearch.yml
   kibana.yml:
     file: config/kibana.yml
+  set-kibana-system-user-password.sh:
+    file: scripts/set-kibana-system-user-password.sh
 # TODO: Otel export logs from docker compose?
 services:
   apmserver:
-    scale: 0
     configs:
     - source: apm-server.yml
       target: /usr/share/apm-server/apm-server.yml
@@ -76,7 +79,7 @@ services:
       retries: 120
       test:
       - CMD-SHELL
-      - curl -s --cacert config/certs/ca/ca.crt https://localhost:9200 | grep -q 'missing authentication credentials'
+      - curl -s --cacert config/certs/ca/ca.crt https://localhost:${ES_PORT} | grep -q 'missing authentication credentials'
       timeout: 10s
     image: ${ES_IMAGE}
     mem_limit: ${ES_MEM_LIMIT}
@@ -125,7 +128,6 @@ services:
     - certs:/usr/share/kibana/config/certs
     - kibanadata:/usr/share/kibana/data
   otelcol:
-    scale: 0
     # TODO: self monitoring
     # TODO: configure for APM
     # TODO: health check for otelcol
@@ -167,31 +169,22 @@ services:
     - "${OTEL_COLLECTOR_PORT_GRPC}:${OTEL_COLLECTOR_PORT_GRPC}"
     - "${OTEL_COLLECTOR_PORT_HTTP}:${OTEL_COLLECTOR_PORT_HTTP}"
   setup_api_key:
+    command: bash /usr/share/elasticsearch/bin/create-api-key.sh
     configs:
     - source: api_key_create_params.json
       target: /etc/elastic/api_key_create_params.json
+    - mode: 0700
+      source: create-api-key.sh
+      target: /usr/share/elasticsearch/bin/create-api-key.sh
     container_name: "setup_api_key"
-    image: pnnlmiscscripts/curl-jq
     depends_on:
       elasticsearch:
         condition: service_healthy
+    image: pnnlmiscscripts/curl-jq
     user: "0"
     volumes:
     - certs:/usr/share/elasticsearch/config/certs
     - etc:/etc/elastic
-    command: >
-        bash -c '
-          test -f /etc/elastic/api_key.yaml || \
-          curl --silent -X POST \
-            --cacert /usr/share/elasticsearch/config/certs/ca/ca.crt \
-            --user elastic:${ELASTIC_PASSWORD} \
-            -H "Content-Type: application/json" \
-            https://elasticsearch:${ES_PORT}/_security/api_key \
-            --data @/etc/elastic/api_key_create_params.json | \
-          jq --raw-output .encoded | \
-          (echo -ne "exporters:\n  elasticsearch:\n    api_key: " && cat) \
-          > /etc/elastic/api_key.yaml
-        '
   setup_certs:
     command: bash bin/create-certs.sh
     configs:
@@ -204,30 +197,22 @@ services:
     volumes:
     - certs:/usr/share/elasticsearch/config/certs
   setup_kibana_user:
+    configs:
+    - mode: 0700
+      source: set-kibana-system-user-password.sh
+      target: /usr/share/elasticsearch/bin/set-kibana-system-user-password.sh
     container_name: "setup_kibana_user"
     depends_on:
       elasticsearch:
         condition: service_healthy
+    environment:
+    - ELASTIC_PASSWORD
+    - ES_PORT
+    - KIBANA_PASSWORD
     image: ${ES_IMAGE}
+    command: bash bin/set-kibana-system-user-password.sh
     volumes:
-    - certs:/usr/share/elasticsearch/config/certs
-    command: >
-        bash -c '
-          set -x
-          if [ -z "${ELASTIC_PASSWORD}" ]; then
-            echo "Set the ELASTIC_PASSWORD environment variable in the .env file" >&2;
-            exit 1;
-          elif [ -z "${KIBANA_PASSWORD}" ]; then
-            echo "Set the KIBANA_PASSWORD environment variable in the .env file" >&2;
-            exit 1;
-          fi;
-          curl --silent -X POST \
-            --cacert config/certs/ca/ca.crt \
-            --user "elastic:${ELASTIC_PASSWORD}" \
-            -H "Content-Type: application/json" \
-            https://elasticsearch:${ES_PORT}/_security/user/kibana_system/_password \
-            --data "{\"password\":\"${KIBANA_PASSWORD}\"}"
-        '
+    - certs:/usr/share/elasticsearch/config/certs     
 volumes:
   bin:
     driver: local
