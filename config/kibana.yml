@@ -3,12 +3,12 @@ elastic.apm:
   active: true
   transaction.sample.rate: 1
 elasticsearch:
-    username: kibana_system
-    ssl:
-      certificate: config/certs/elasticsearch/elasticsearch.crt
-      certificateAuthorities: [ "config/certs/ca/ca.crt" ]
-      key: config/certs/elasticsearch/elasticsearch.key
-      verificationMode: full
+  username: kibana_system
+  ssl:
+    certificate: config/certs/elasticsearch/elasticsearch.crt
+    certificateAuthorities: [ "config/certs/ca/ca.crt" ]
+    key: config/certs/elasticsearch/elasticsearch.key
+    verificationMode: full
 logging.root.level: warn
 monitoring.ui.container.elasticsearch.enabled: true
 server:

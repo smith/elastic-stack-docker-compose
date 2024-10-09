@@ -40,6 +40,7 @@ configs:
     file: scripts/set-kibana-system-user-password.sh
 services:
   apmserver:
+    scale: 0
     configs:
     - source: apm-server.yml
       target: /usr/share/apm-server/config/apm-server.yml
@@ -76,6 +77,7 @@ services:
       setup_certs:
         condition: service_completed_successfully
     environment:
+    - ELASTIC_PASSWORD
     - cluster.name="${ES_CLUSTER_NAME}"
     - xpack.license.self_generated.type="${ES_LICENSE}"
     healthcheck:
@@ -98,7 +100,9 @@ services:
     - certs:/usr/share/elasticsearch/config/certs
     - esdata:/usr/share/elasticsearch/data
   kibana:
-     # TODO: SSL
+    # TODO: SSL
+    # TODO: HTTP 2 (for es also?)
+    # TODO: Turn on EEM
     # TODO: Kibana is currently running with legacy OpenSSL providers enabled! For details and instructions on how to disable see https://www.elastic.co/guide/en/kibana/current/production.html#openssl-legacy-provider
     # TODO: Error initializing AI assistant resources: Platinum, Enterprise or trial license needed
     # TODO :Session cookies will be transmitted over insecure connections. This is not recommended.
@@ -115,7 +119,7 @@ services:
     environment:
     - ELASTIC_APM_SERVER_URL=http://apmserver:${APM_SERVER_PORT}
     - ELASTICSEARCH_HOSTS=https://elasticsearch:${ES_PORT}
-    - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+    - ELASTICSEARCH_PASSWORD=${ELASTIC_PASSWORD}
     healthcheck:
       interval: 10s
       retries: 120
@@ -132,6 +136,7 @@ services:
     - certs:/usr/share/kibana/config/certs
     - kibanadata:/usr/share/kibana/data
   otelcol:
+    scale: 0
     # TODO: self monitoring
     # TODO: configure for APM
     # TODO: health check for otelcol
