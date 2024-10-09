@@ -196,4 +196,4 @@ service:
   telemetry:
     logs:
       disable_stacktrace: true
-      level: INFO
+      level: WARN
