@@ -5,6 +5,7 @@ ingest.geoip.downloader.enabled: false
 logger.org.elasticsearch: WARN
 network.host: 0.0.0.0
 node.name: elastic-stack-docker-compose-es-node-0
+xpack.otel_data.registry.enabled: true
 xpack.security:
   enabled: true
   http.ssl.certificate_authorities: [ "certs/ca/ca.crt" ]

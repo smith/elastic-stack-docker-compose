@@ -48,8 +48,6 @@ services:
     depends_on:
       elasticsearch:
         condition: service_healthy
-      setup_api_key:
-        condition: service_completed_successfully
       setup_certs:
         condition: service_completed_successfully
     deploy:
@@ -65,11 +63,11 @@ services:
     - apm-server.host="0.0.0.0:${APM_SERVER_PORT}"
     - output.elasticsearch.hosts=["https://elasticsearch:${ES_PORT}"]    
     - output.elasticsearch.password="${ELASTIC_PASSWORD}"
+    hostname: host.docker.internal
     image: ${APM_SERVER_IMAGE}
     ports:
     - ${APM_SERVER_PORT}:${APM_SERVER_PORT}
     restart: unless-stopped
-    user: "0"
     volumes:
     - certs:/usr/share/apm-server/config/certs
   elasticsearch:
@@ -97,6 +95,7 @@ services:
       - CMD-SHELL
       - curl -s --cacert config/certs/ca/ca.crt https://localhost:${ES_PORT} | grep -q 'missing authentication credentials'
       timeout: 10s
+    hostname: host.docker.internal
     image: ${ES_IMAGE}
     mem_limit: ${ES_MEM_LIMIT}
     ports:
@@ -142,6 +141,7 @@ services:
       - CMD-SHELL
       - curl -s http://localhost:5601/api/status
       timeout: 10s
+    hostname: host.docker.internal
     image: ${KIBANA_IMAGE}
     mem_limit: ${ES_MEM_LIMIT}
     ports:
@@ -180,6 +180,7 @@ services:
     - KIBANA_PORT
     - OTEL_COLLECTOR_PORT_GRPC
     - OTEL_COLLECTOR_PORT_HTTP
+    hostname: host.docker.internal
     image: ${COLLECTOR_CONTRIB_IMAGE}
     ports:
     - "${OTEL_COLLECTOR_PORT_GRPC}:${OTEL_COLLECTOR_PORT_GRPC}"
@@ -206,6 +207,7 @@ services:
     environment:
     - ELASTIC_PASSWORD
     - ES_PORT
+    hostname: host.docker.internal
     image: pnnlmiscscripts/curl-jq
     user: "0"
     volumes:
@@ -218,6 +220,7 @@ services:
       source: create-certs.sh
       target: /usr/share/elasticsearch/bin/create-certs.sh
     container_name: "setup_certs"
+    hostname: host.docker.internal
     image: ${ES_IMAGE}
     user: "0"
     volumes:
@@ -235,6 +238,7 @@ services:
     - ELASTIC_PASSWORD
     - ES_PORT
     - KIBANA_PASSWORD
+    hostname: host.docker.internal
     image: ${ES_IMAGE}
     command: bash bin/set-kibana-system-user-password.sh
     volumes:

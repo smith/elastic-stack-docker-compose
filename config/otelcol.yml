@@ -47,13 +47,9 @@ receivers:
       - endpoint: https://elastic:${env:ELASTIC_PASSWORD}@elasticsearch:${env:ES_PORT}
         tls:
           ca_file: /usr/share/elastic-agent/config/certs/ca/ca.crt
-          cert_file: /usr/share/elastic-agent/config/certs/elasticsearch/elasticsearch.crt
-          key_file: /usr/share/elastic-agent/config/certs/elasticsearch/elasticsearch.key
       - endpoint: http://kibana:${env:KIBANA_PORT}/api/status
         tls:
           ca_file: /usr/share/elastic-agent/config/certs/ca/ca.crt
-          cert_file: /usr/share/elastic-agent/config/certs/elasticsearch/elasticsearch.crt
-          key_file: /usr/share/elastic-agent/config/certs/elasticsearch/elasticsearch.key
       # TODO: fix http check for collector (See https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/extension/healthcheckextension/README.md)
       # - endpoint: http://otelcol:${env:OTEL_COLLECTOR_PORT_GRPC}
       #   tls:
@@ -139,8 +135,6 @@ exporters:
       enabled: true
     tls:
       ca_file: /usr/share/elastic-agent/config/certs/ca/ca.crt
-      cert_file: /usr/share/elastic-agent/config/certs/elasticsearch/elasticsearch.crt
-      key_file: /usr/share/elastic-agent/config/certs/elasticsearch/elasticsearch.key
     traces_dynamic_index:
       enabled: true
 # [Service Section](https://opentelemetry.io/docs/collector/configuration/#service)
