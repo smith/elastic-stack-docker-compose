@@ -1,5 +1,5 @@
 #!/bin/bash
-set -xeo pipefail
+set -eo pipefail
 
 if [ -z "$ELASTIC_PASSWORD" ]; then
     echo "Set the ELASTIC_PASSWORD environment variable in the .env file" >&2;
@@ -8,7 +8,7 @@ elif [ -z "$KIBANA_PASSWORD" ]; then
     echo "Set the KIBANA_PASSWORD environment variable in the .env file" >&2;
     exit 1;
 fi;
-curl -X POST \
+curl --silent -X POST \
     --cacert config/certs/ca/ca.crt \
     --cert config/certs/elasticsearch/elasticsearch.crt \
     --cert config/certs/elasticsearch/elasticsearch.key \
