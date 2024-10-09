@@ -33,6 +33,10 @@ Runs:
 
 To collect [Docker Compose metrics](https://docs.docker.com/engine/cli/otel/), set the environment variable `DOCKER_CLI_OTEL_EXPORTER_OTLP_ENDPOINT=localhost:4317`. These metrics go to the `metrics-generic-default` data stream with `service.name=docker` and `service.name=docker-compose`.
 
+#### Selecting which services to run
+
+If you don't need a particular service (let's say you already have Kibana running in dev mode), you can add `scale: 0` to the service definition to prevent it from being started when `docker compose up` is run. You can also run `docker compose stop SERVICE_NAME` to stop an individual service.
+
 ## Data collected
 
 * Any OpenTelemetry log or metric data sent to localhost:4317-4318 (use `host.docker.internal` from containers)

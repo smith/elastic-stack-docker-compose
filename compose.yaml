@@ -41,7 +41,6 @@ configs:
 services:
   apmserver:
     # TODO: why is it sending unencrypted traffic to ES?
-    scale: 0
     configs:
     - source: apm-server.yml
       target: /usr/share/apm-server/config/apm-server.yml
@@ -159,7 +158,7 @@ services:
     configs:
     - source: otelcol.yml
       target: /etc/otelcol/config.yaml
-    container_name: "openstash"
+    container_name: "otelcol"
     depends_on:
       elasticsearch:
         condition: service_healthy
