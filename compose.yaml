@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # TODO: Otel export logs from docker compose?
+# TODO: Issue with slave when running otel demo https://elastic.slack.com/archives/C031284ANNL/p1728500190563419
 
 # [Compose file](https://docs.docker.com/reference/compose-file/) for Elastic stack
 name: elastic-stack-docker-compose
