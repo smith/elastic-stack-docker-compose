@@ -40,6 +40,7 @@ configs:
     file: scripts/set-kibana-system-user-password.sh
 services:
   apmserver:
+    # TODO: why is it sending unencrypted traffic to ES?
     scale: 0
     configs:
     - source: apm-server.yml
@@ -56,9 +57,14 @@ services:
       resources:
         limits:
           memory: 200M
+    develop:
+      watch:
+      - action: sync+restart
+        path: config/apm-server.yml
+        target: /usr/share/apm-server/config/apm-server.yml
     environment: 
-    - apm-server.host="0.0.0.0:${APM_SERVER_PORT}""
-    - output.elasticsearch.hosts="https://elasticsearch:${ES_PORT}"
+    - apm-server.host="0.0.0.0:${APM_SERVER_PORT}"
+    - output.elasticsearch.hosts=["https://elasticsearch:${ES_PORT}"]    
     - output.elasticsearch.password="${ELASTIC_PASSWORD}"
     image: ${APM_SERVER_IMAGE}
     ports:
@@ -76,6 +82,11 @@ services:
     depends_on:
       setup_certs:
         condition: service_completed_successfully
+    develop:
+      watch:
+      - action: sync+restart
+        path: config/elasticsearch.yml
+        target: /usr/share/elasticsearch/config/elasticsearch.yml
     environment:
     - ELASTIC_PASSWORD
     - cluster.name="${ES_CLUSTER_NAME}"
@@ -116,6 +127,11 @@ services:
         condition: service_healthy
       setup_kibana_user:
         condition: service_completed_successfully
+    develop:
+      watch:
+      - action: sync+restart
+        path: config/kibana.yml
+        target: /usr/share/kibana/config/kibana.yml
     environment:
     - ELASTIC_APM_SERVER_URL=http://apmserver:${APM_SERVER_PORT}
     - ELASTICSEARCH_HOSTS=https://elasticsearch:${ES_PORT}
@@ -136,7 +152,6 @@ services:
     - certs:/usr/share/kibana/config/certs
     - kibanadata:/usr/share/kibana/data
   otelcol:
-    scale: 0
     # TODO: self monitoring
     # TODO: configure for APM
     # TODO: health check for otelcol
@@ -154,13 +169,16 @@ services:
       resources:
         limits:
           memory: 200M
+    develop:
+      watch:
+      - action: sync+restart
+        path: config/otelcol.yml
+        target: /etc/otelcol/config.yaml
     environment:
     - ELASTIC_AGENT_OTEL
     - ELASTIC_PASSWORD
-    - ENVOY_PORT
     - ES_PORT
     - KIBANA_PORT
-    - HOST_FILESYSTEM
     - OTEL_COLLECTOR_PORT_GRPC
     - OTEL_COLLECTOR_PORT_HTTP
     image: ${COLLECTOR_CONTRIB_IMAGE}
@@ -186,6 +204,9 @@ services:
     depends_on:
       elasticsearch:
         condition: service_healthy
+    environment:
+    - ELASTIC_PASSWORD
+    - ES_PORT
     image: pnnlmiscscripts/curl-jq
     user: "0"
     volumes:

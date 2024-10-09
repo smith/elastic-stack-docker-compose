@@ -1,6 +1,6 @@
 #!/bin/bash
 set -eo pipefail
-
+# TODO: This can fail and give you a yaml file where the key is empty
 test -f /etc/elastic/api_key.yaml || \
 curl --no-progress-meter --fail -X POST \
     --cacert /usr/share/elasticsearch/config/certs/ca/ca.crt \

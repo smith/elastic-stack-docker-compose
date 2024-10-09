@@ -129,7 +129,7 @@ exporters:
     verbosity: basic
   # [Elasticsearch exporter](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/exporter/elasticsearchexporter/README.md)
   elasticsearch:
-    endpoint: https://elasticsearch:9200
+    endpoint: https://elasticsearch:${env:ES_PORT}
     # api_key: (loaded from /etc/elastic/api_key.yaml)
     mapping:
       mode: ecs
