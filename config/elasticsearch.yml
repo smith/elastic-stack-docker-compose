@@ -1,4 +1,4 @@
- # [Elasticsearch configuration](https://www.elastic.co/guide/en/elasticsearch/reference/current/settings.html)
+# [Elasticsearch configuration](https://www.elastic.co/guide/en/elasticsearch/reference/current/settings.html)
 bootstrap.memory_lock: true
 discovery.type: single-node
 ingest.geoip.downloader.enabled: false
