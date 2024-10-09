@@ -8,7 +8,7 @@ elif [ -z "$KIBANA_PASSWORD" ]; then
     echo "Set the KIBANA_PASSWORD environment variable in the .env file" >&2;
     exit 1;
 fi;
-curl --silent -X POST \
+curl --no-progress-meter -X POST \
     --cacert config/certs/ca/ca.crt \
     --cert config/certs/elasticsearch/elasticsearch.crt \
     --cert config/certs/elasticsearch/elasticsearch.key \
