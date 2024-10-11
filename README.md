@@ -1,4 +1,18 @@
 # Elastic Stack Docker Compose
+
+Instructions for this branch:
+
+* Clone [elastic-stack-docker-compose](https://github.com/smith/elastic-stack-docker-compose)
+* [Open a PR to deploy a PR](https://github.com/elastic/observability-test-environments/issues/new?assignees=&labels=cluster,deploy-custom-kibana&template=cluster-deploy-custom-kibana-issue.yaml&title=[Deploy+Kibana]:+)
+* [Find the docker image](https://github.com/elastic/observability-test-environments/issues/53842)
+* [Look at the action for the deploy](https://github.com/elastic/observability-test-environments/actions/runs/11285323080/job/31387922771)
+* Find the line (3200 on my build) that looks like `│ info 9.0.0-SNAPSHOT-c1796703726f200b6f208f2d7bd1e813166851be: digest: sha256:cec4d745f92c470e96c1dc230205b8a563a681578a4ee905058c5725f21c91d5 size: 3661`
+* Edit the `KIBANA_IMAGE` in .env to be like `KIBANA_IMAGE=docker.elastic.co/observability-ci/kibana-cloud:9.0.0-SNAPSHOT-c1796703726f200b6f208f2d7bd1e813166851be`
+* `docker compose up`
+* Go to inventory and Enable EEM
+* Go to hosts and create an inventory alert
+* Go to inventory. There's the alert! Click it!
+
 [![OpenTelemetry collector configuration on OTelBin](https://www.otelbin.io/badges/collector-config)](https://www.otelbin.io/s/c5777df93e729bf37c83bb48928714b67e8bb42c)
 
 [Docker Compose](https://docs.docker.com/compose/) configuration to run the [Elastic Stack](https://www.elastic.co/elastic-stack/) components.
