@@ -117,6 +117,7 @@ services:
     # TODO: Error initializing AI assistant resources: Platinum, Enterprise or trial license needed
     # TODO :Session cookies will be transmitted over insecure connections. This is not recommended.
     # TODO generate encryption keys
+    # TODO: Set up alerts for services/hosts on boot
     configs:
       - source: kibana.yml
         target: /usr/share/kibana/config/kibana.yml

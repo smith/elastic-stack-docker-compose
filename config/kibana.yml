@@ -8,10 +8,17 @@ elasticsearch:
     certificateAuthorities: [ "config/certs/ca/ca.crt" ]
     verificationMode: full
 logging.root.level: warn
-monitoring.ui.container.elasticsearch.enabled: true
+
+uiSettings.overrides.defaultRoute: /app/discover#/?_g=()&_a=(dataSource:(type:esql),filters:!(),query:(esql:'FROM%20logs-*%20%7C%20LIMIT%2010'))
+uiSettings.overrides.observability:enableInspectEsQueries: true
+uiSettings.overrides.observability:entityCentricExperience: true
+# TODO: The ES|QL window is white when system darkmode is enabled.
+uiSettings.overrides.theme:darkMode: system
+
 server:
   host: "0.0.0.0"
   shutdownTimeout: "5s"
+
 xpack.encryptedSavedObjects.encryptionKey: 0c4fb61f013d771f43d321e5b2484f4d
 xpack.reporting.encryptionKey: 369ecfa55ee4b9e8c3d5481c6589287a
 xpack.reporting.roles.enabled: false
