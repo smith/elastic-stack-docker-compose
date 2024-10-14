@@ -38,6 +38,24 @@ To collect [Docker Compose metrics](https://docs.docker.com/engine/cli/otel/), s
 
 If you don't need a particular service (let's say you already have Kibana running in dev mode), you can add `scale: 0` to the service definition to prevent it from being started when `docker compose up` is run. You can also run `docker compose stop SERVICE_NAME` to stop an individual service.
 
+#### Updating image
+
+In [.env](./env) the default image variables look like this:
+
+```
+KIBANA_IMAGE=docker.elastic.co/kibana/kibana:9.0.0-SNAPSHOT
+```
+
+When you first start, it will download the latest snapshot image. to update to the latest image, for, for example, Kibana, run:
+
+```bash
+docker compose stop kibana
+docker compose rm -f kibana
+compose pull kibana
+```
+
+You can omit `kibana` to update all images.
+
 ## Data collected
 
 * Any OpenTelemetry log or metric data sent to localhost:4317-4318 (use `host.docker.internal` from containers)
