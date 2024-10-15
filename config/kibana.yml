@@ -14,7 +14,7 @@ uiSettings.overrides.observability:enableInspectEsQueries: true
 uiSettings.overrides.observability:entityCentricExperience: true
 # TODO: The ES|QL window is white when system darkmode is enabled.
 uiSettings.overrides.theme:darkMode: system
-
+uiSettings.overrides.observability:newLogsOverview: true
 server:
   host: "0.0.0.0"
   shutdownTimeout: "5s"
