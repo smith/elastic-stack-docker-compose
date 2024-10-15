@@ -1,7 +1,4 @@
 # [Kibana configuration](https://github.com/elastic/kibana/blob/main/config/kibana.yml)
-elastic.apm:
-  #active: true
-  transaction.sample.rate: 1
 elasticsearch:
   username: kibana_system
   ssl:

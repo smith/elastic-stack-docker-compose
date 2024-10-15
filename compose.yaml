@@ -7,8 +7,6 @@
 # [Compose file](https://docs.docker.com/reference/compose-file/) for Elastic stack
 name: elastic-stack-docker-compose
 configs:
-  apm-server.yml:
-    file: config/apm-server.yml
   api_key_create_params.json:
     content: |
       {
@@ -40,37 +38,6 @@ configs:
   set-kibana-system-user-password.sh:
     file: scripts/set-kibana-system-user-password.sh
 services:
-  apmserver:
-    # TODO: why is it sending unencrypted traffic to ES?
-    configs:
-    - source: apm-server.yml
-      target: /usr/share/apm-server/config/apm-server.yml
-    container_name: apmserver
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
-      setup_certs:
-        condition: service_completed_successfully
-    deploy:
-      resources:
-        limits:
-          memory: 200M
-    develop:
-      watch:
-      - action: sync+restart
-        path: config/apm-server.yml
-        target: /usr/share/apm-server/config/apm-server.yml
-    environment: 
-    - apm-server.host="0.0.0.0:${APM_SERVER_PORT}"
-    - output.elasticsearch.hosts=["https://elasticsearch:${ES_PORT}"]    
-    - output.elasticsearch.password="${ELASTIC_PASSWORD}"
-    hostname: host.docker.internal
-    image: ${APM_SERVER_IMAGE}
-    ports:
-    - ${APM_SERVER_PORT}:${APM_SERVER_PORT}
-    restart: unless-stopped
-    volumes:
-    - certs:/usr/share/apm-server/config/certs
   elasticsearch:
     # TODO: apm export from elasticsearch
     configs:
