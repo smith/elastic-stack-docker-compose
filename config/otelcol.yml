@@ -100,7 +100,7 @@ processors:
         host.cpu.vendor.id:
           enabled: true
         host.id:
-          enabled: false
+          enabled: true
         host.ip:
           enabled: true
         host.mac:
@@ -141,52 +141,60 @@ exporters:
 service:
   pipelines:
     logs/fromsdk:
-      exporters:
-        - elasticsearch
-        - debug
-      processors: []
       receivers:
         - otlp/fromsdk
-    logs/platformlogs:
+      processors: []
       exporters:
         - elasticsearch
         - debug
+    logs/hostmetrics:
+      receivers:
+        - hostmetrics/system
       processors:
         - resourcedetection
+      exporters:
+       - debug
+       - elasticsearch
+    logs/platformlogs:
       receivers:
         - filelog/platformlogs
-    metrics/fromsdk:
+      processors:
+        - resourcedetection
       exporters:
         - elasticsearch
         - debug
-      processors: []
+    metrics/fromsdk:
       receivers:
         - otlp/fromsdk
-    metrics/hostmetrics:
+      processors: []
       exporters:
-        - elasticsearch
-        - debug
+       - debug
+       - elasticsearch
+    metrics/hostmetrics:
+      receivers:
+        - hostmetrics/system
       processors:
         - elasticinframetrics
         - resourcedetection
         - attributes/dataset
         - resource/process
-      receivers:
-        - hostmetrics/system
-    metrics/httpcheck:
       exporters:
         - elasticsearch
         - debug
-      processors: []
+    metrics/httpcheck:
       receivers:
         - httpcheck
-    traces/fromsdk:
+      processors: []
       exporters:
         - elasticsearch
         - debug
-      processors: []
+    traces/fromsdk:
       receivers:
         - otlp/fromsdk
+      processors: []
+      exporters:
+        - elasticsearch
+        - debug
   telemetry:
     logs:
       disable_stacktrace: true
