@@ -161,6 +161,7 @@ services:
     - ${DOCKER_SOCK}:/var/run/docker.sock:ro
     - certs:/usr/share/elastic-agent/config/certs
     - etc:/etc/elastic
+    - otel_registry:/usr/share/elastic-agent/otel_registry
   setup_api_key:
     command: bash /usr/share/elasticsearch/bin/create-api-key.sh
     configs:
@@ -222,4 +223,7 @@ volumes:
   etc:
     driver: local
   kibanadata:
+    driver: local
+  # See https://github.com/elastic/elastic-agent/blob/main/internal/pkg/otel/README.md#persistence-in-standalone-docker-mode
+  otel_registry:
     driver: local
