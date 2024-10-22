@@ -85,6 +85,7 @@ services:
     # TODO :Session cookies will be transmitted over insecure connections. This is not recommended.
     # TODO generate encryption keys
     # TODO: Set up alerts for services/hosts on boot
+    # TODO: inspect logs queries to the kibana console but it should do them at DEBUG level not WARN
     configs:
       - source: kibana.yml
         target: /usr/share/kibana/config/kibana.yml
@@ -100,7 +101,6 @@ services:
         path: config/kibana.yml
         target: /usr/share/kibana/config/kibana.yml
     environment:
-    - ELASTIC_APM_SERVER_URL=http://apmserver:${APM_SERVER_PORT}
     - ELASTICSEARCH_HOSTS=https://elasticsearch:${ES_PORT}
     - ELASTICSEARCH_PASSWORD=${ELASTIC_PASSWORD}
     healthcheck:
