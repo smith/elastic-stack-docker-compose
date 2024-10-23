@@ -166,7 +166,8 @@ service:
     metrics/fromsdk:
       receivers:
         - otlp/fromsdk
-      processors: []
+      processors:
+        - resourcedetection
       exporters:
        - debug
        - elasticsearch
