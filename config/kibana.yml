@@ -203,3 +203,4 @@ xpack.reporting.encryptionKey: 369ecfa55ee4b9e8c3d5481c6589287a
 xpack.reporting.roles.enabled: false
 xpack.screenshotting.browser.chromium.disableSandbox: true
 xpack.security.encryptionKey: 944c9b01e335cf7eebcda4413797f494
+xpack.spaces.experimental.forceSolutionVisibility: true
