@@ -142,60 +142,63 @@ service:
   pipelines:
     logs/fromsdk:
       receivers:
-        - otlp/fromsdk
-      processors: []
+      - otlp/fromsdk
+      processors:
+      - resourcedetection
       exporters:
-        - elasticsearch
-        - debug
+      - elasticsearch
+      - debug
     logs/hostmetrics:
       receivers:
-        - hostmetrics/system
+      - hostmetrics/system
       processors:
-        - resourcedetection
+      - resourcedetection
       exporters:
-       - debug
-       - elasticsearch
+      - debug
+      - elasticsearch
     logs/platformlogs:
       receivers:
-        - filelog/platformlogs
+      - filelog/platformlogs
       processors:
-        - resourcedetection
+      - resourcedetection
       exporters:
-        - elasticsearch
-        - debug
+      - elasticsearch
+      - debug
     metrics/fromsdk:
       receivers:
-        - otlp/fromsdk
+      - otlp/fromsdk
       processors:
-        - resourcedetection
+      - resourcedetection
       exporters:
-       - debug
-       - elasticsearch
+      - debug
+      - elasticsearch
     metrics/hostmetrics:
       receivers:
-        - hostmetrics/system
+      - hostmetrics/system
       processors:
-        - elasticinframetrics
-        - resourcedetection
-        - attributes/dataset
-        - resource/process
+      - elasticinframetrics
+      - resourcedetection
+      - attributes/dataset
+      - resource/process
       exporters:
-        - elasticsearch
-        - debug
+      - elasticsearch
+      - debug
     metrics/httpcheck:
       receivers:
-        - httpcheck
-      processors: []
+      - httpcheck
+      processors:
+      - resourcedetection
       exporters:
-        - elasticsearch
-        - debug
+      - elasticsearch
+      - debug
     traces/fromsdk:
       receivers:
-        - otlp/fromsdk
-      processors: []
+      - otlp/fromsdk
+      processors:
+      - resourcedetection
       exporters:
-        - elasticsearch
-        - debug
+      - elasticsearch
+      - debug
   telemetry:
     logs:
       disable_stacktrace: true
