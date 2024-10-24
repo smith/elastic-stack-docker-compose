@@ -88,9 +88,6 @@ elasticsearch.username: "kibana_system"
 # Time in milliseconds for Elasticsearch to wait for responses from shards. Set to 0 to disable.
 #elasticsearch.shardTimeout: 30000
 
-# Whether to allow kibana to connect to a non-compatible elasticsearch node. See https://github.com/elastic/kibana/blob/main/packages/core/elasticsearch/core-elasticsearch-server/src/elasticsearch_config.ts#L26-L29
-elasticsearch.ignoreVersionMismatch: true
-
 # =================== System: Elasticsearch (Optional) ===================
 # These files are used to verify the identity of Kibana to Elasticsearch and are required when
 # xpack.security.http.ssl.client_authentication in Elasticsearch is set to required.
