@@ -1,5 +1,5 @@
 # Elastic Stack Docker Compose
-[![OpenTelemetry collector configuration on OTelBin](https://www.otelbin.io/badges/collector-config)](https://www.otelbin.io/s/c5777df93e729bf37c83bb48928714b67e8bb42c)
+[![OpenTelemetry collector configuration on OTelBin](https://www.otelbin.io/badges/collector-config)](https://www.otelbin.io/s/f508f8ba981f3e209723054e71d6bcfef478ed70)
 
 [Docker Compose](https://docs.docker.com/compose/) configuration to run the [Elastic Stack](https://www.elastic.co/elastic-stack/) components.
 
