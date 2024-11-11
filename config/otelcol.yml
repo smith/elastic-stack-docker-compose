@@ -3,7 +3,7 @@ receivers:
   # [File Log Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/filelogreceiver/README.md)
   filelog/platformlogs:
     include:
-      - /var/log/*.log
+    - /var/log/*.log
     retry_on_failure:
       enabled: true
     start_at: end
@@ -44,13 +44,13 @@ receivers:
   # TODO: Route checks to different data streams
   httpcheck:
     targets:
-      - endpoint: https://elastic:${env:ELASTIC_PASSWORD}@elasticsearch:${env:ES_PORT}
-        tls:
+    - endpoint: https://elastic:${env:ELASTIC_PASSWORD}@elasticsearch:${env:ES_PORT}
+      tls:
           ca_file: /usr/share/elastic-agent/config/certs/ca/ca.crt
-      - endpoint: http://kibana:${env:KIBANA_PORT}/api/status
-        tls:
+    - endpoint: http://kibana:${env:KIBANA_PORT}/api/status
+      tls:
           ca_file: /usr/share/elastic-agent/config/certs/ca/ca.crt
-      # TODO: fix http check for collector (See https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/extension/healthcheckextension/README.md)
+    # TODO: fix http check for collector (See https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/extension/healthcheckextension/README.md)
       # - endpoint: http://otelcol:${env:OTEL_COLLECTOR_PORT_GRPC}
       #   tls:
       #     ca_file: /usr/share/elastic-agent/config/certs/ca/ca.crt
@@ -64,26 +64,26 @@ receivers:
       http:
         cors:
           allowed_origins:
-            - "http://*"
-            - "https://*"
+          - "http://*"
+          - "https://*"
         endpoint: otelcol:${env:OTEL_COLLECTOR_PORT_HTTP}
 # [Processors](https://github.com/open-telemetry/opentelemetry-collector/tree/main/processor#readme)
 processors:
   # [Attributes Processor](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/processor/attributesprocessor/README.md)
   attributes/dataset:
     actions:
-      - action: upsert
-        from_attribute: data_stream.dataset
-        key: event.dataset
+    - action: upsert
+      from_attribute: data_stream.dataset
+      key: event.dataset
   # [Elastic Infra Metrics Processor](https://github.com/elastic/opentelemetry-collector-components/blob/main/processor/elasticinframetricsprocessor/README.md)
   elasticinframetrics: {}
   # [Resource Detection Processor](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/processor/resourcedetectionprocessor/README.md)
   resourcedetection:
     detectors:
-      - system
+    - system
     system:
       hostname_sources:
-        - os
+      - os
       resource_attributes:
         host.arch:
           enabled: true
@@ -114,15 +114,15 @@ processors:
   # [Resource Processor](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/resourceprocessor)
   resource/process:
     attributes:
-      - action: delete
-        key: process.executable.name
-      - action: delete
-        key: process.executable.path
+    - action: delete
+      key: process.executable.name
+    - action: delete
+      key: process.executable.path
 # [Exporters](https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter#readme)
 exporters:
   # [Debug exporter](https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/debugexporter/README.md)
   debug:
-    verbosity: basic
+    verbosity: detailed
   # [Elasticsearch exporter](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/exporter/elasticsearchexporter/README.md)
   elasticsearch:
     endpoint: https://elasticsearch:${env:ES_PORT}
@@ -140,49 +140,6 @@ exporters:
 # [Service Section](https://opentelemetry.io/docs/collector/configuration/#service)
 service:
   pipelines:
-    logs/fromsdk:
-      receivers:
-      - otlp/fromsdk
-      processors:
-      - resourcedetection
-      exporters:
-      - elasticsearch
-      - debug
-    logs/hostmetrics:
-      receivers:
-      - hostmetrics/system
-      processors:
-      - resourcedetection
-      exporters:
-      - debug
-      - elasticsearch
-    logs/platformlogs:
-      receivers:
-      - filelog/platformlogs
-      processors:
-      - resourcedetection
-      exporters:
-      - elasticsearch
-      - debug
-    metrics/fromsdk:
-      receivers:
-      - otlp/fromsdk
-      processors:
-      - resourcedetection
-      exporters:
-      - debug
-      - elasticsearch
-    metrics/hostmetrics:
-      receivers:
-      - hostmetrics/system
-      processors:
-      - elasticinframetrics
-      - resourcedetection
-      - attributes/dataset
-      - resource/process
-      exporters:
-      - elasticsearch
-      - debug
     metrics/httpcheck:
       receivers:
       - httpcheck
@@ -191,15 +148,7 @@ service:
       exporters:
       - elasticsearch
       - debug
-    traces/fromsdk:
-      receivers:
-      - otlp/fromsdk
-      processors:
-      - resourcedetection
-      exporters:
-      - elasticsearch
-      - debug
   telemetry:
     logs:
       disable_stacktrace: true
-      level: WARN
+      level: INFO
