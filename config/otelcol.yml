@@ -122,7 +122,7 @@ processors:
 exporters:
   # [Debug exporter](https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/debugexporter/README.md)
   debug:
-    verbosity: detailed
+    verbosity: basic
   # [Elasticsearch exporter](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/exporter/elasticsearchexporter/README.md)
   elasticsearch:
     endpoint: https://elasticsearch:${env:ES_PORT}
@@ -151,4 +151,4 @@ service:
   telemetry:
     logs:
       disable_stacktrace: true
-      level: INFO
+      level: WARN
