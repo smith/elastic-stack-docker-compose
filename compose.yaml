@@ -79,12 +79,8 @@ services:
     - certs:/usr/share/elasticsearch/config/certs
     - esdata:/usr/share/elasticsearch/data
   kibana:
-    # TODO: SSL
-    # TODO: HTTP 2 (for es also?)
     # TODO: Turn on EEM
-    # TODO: Kibana is currently running with legacy OpenSSL providers enabled! For details and instructions on how to disable see https://www.elastic.co/guide/en/kibana/current/production.html#openssl-legacy-provider
     # TODO: Error initializing AI assistant resources: Platinum, Enterprise or trial license needed
-    # TODO :Session cookies will be transmitted over insecure connections. This is not recommended.
     # TODO generate encryption keys
     # TODO: Set up alerts for services/hosts on boot
     # TODO: inspect logs queries to the kibana console but it should do them at DEBUG level not WARN

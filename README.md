@@ -25,12 +25,30 @@ Runs:
 * Clone this repository
 * `cd elastic-stack-docker-compose`
 * `docker compose up`
-* Open http://localhost:5601
+* Open https://localhost:5601
 * Log in with `elastic`/`changeme`
 * Adjust configuration in the files in this repository for your needs
 * If you have improvements or fixes, open a pull request to https://github.com/smith/elastic-stack-docker-compose
 
-#### Docker Comppose metrics
+#### Kibana TLS
+
+Kibana is configured for HTTP2 by default. The HTTPS connection will not be trusted unless you configure your operating system to trust the certificate.
+
+To get a copy out of the certificate from a running environment run:
+
+```bash
+docker compose run setup_certs cat config/certs/elasticsearch/elasticsearch.crt > cert
+```
+
+On MacOS you can add this certificate to the trusted store with:
+
+```bash
+sudo security add-trusted-cert -d -r trustAsRoot -p ssl -k /Library/Keychains/System.keychain cert
+```
+
+You'll need to do this again if the volume for the certificates gets recreated.
+
+#### Docker Compose metrics
 
 To collect [Docker Compose metrics](https://docs.docker.com/engine/cli/otel/), set the environment variable `DOCKER_CLI_OTEL_EXPORTER_OTLP_ENDPOINT=localhost:4317`. These metrics go to the `metrics-generic-default` data stream with `service.name=docker` and `service.name=docker-compose`.
 
