@@ -33,6 +33,8 @@ configs:
     file: config/elasticsearch.yml
   kibana.yml:
     file: config/kibana.yml
+  node.options:
+    file: config/node.options
   otelcol.yml:
     file: config/otelcol.yml
   set-kibana-system-user-password.sh:
@@ -89,6 +91,8 @@ services:
     configs:
       - source: kibana.yml
         target: /usr/share/kibana/config/kibana.yml
+      - source: node.options
+        target: /usr/share/kibana/config/node.options
     container_name: kibana
     depends_on:
       elasticsearch:
