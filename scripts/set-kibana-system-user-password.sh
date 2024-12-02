@@ -8,7 +8,7 @@ elif [ -z "$KIBANA_PASSWORD" ]; then
     exit 1;
 fi;
 curl --no-progress-meter --fail -X POST \
-    --cacert config/certs/ca/ca.crt \
+    --cacert /usr/share/elasticsearch/config/certs/ca/ca.crt \
     --user "elastic:$ELASTIC_PASSWORD" \
     -H "Content-Type: application/json" \
     https://elasticsearch:$ES_PORT/_security/user/kibana_system/_password \

@@ -199,7 +199,7 @@ services:
     configs:
     - mode: 0700
       source: set-kibana-system-user-password.sh
-      target: /usr/share/elasticsearch/bin/set-kibana-system-user-password.sh
+      target: /bin/set-kibana-system-user-password.sh
     container_name: "setup_kibana_user"
     depends_on:
       elasticsearch:
@@ -209,7 +209,7 @@ services:
     - ES_PORT
     - KIBANA_PASSWORD
     hostname: host.docker.internal
-    image: ${ES_IMAGE}
+    image: pnnlmiscscripts/curl-jq
     command: bash bin/set-kibana-system-user-password.sh
     volumes:
     - certs:/usr/share/elasticsearch/config/certs     
