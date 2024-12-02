@@ -39,9 +39,10 @@ configs:
     file: config/otelcol.yml
   set-kibana-system-user-password.sh:
     file: scripts/set-kibana-system-user-password.sh
+  set-kibana-space-settings.sh:
+    file: scripts/set-kibana-space-settings.sh
 services:
   elasticsearch:
-    # TODO: apm export from elasticsearch
     configs:
     - source: elasticsearch.yml
       target: /usr/share/elasticsearch/config/elasticsearch.yml
@@ -108,7 +109,7 @@ services:
       retries: 120
       test:
       - CMD-SHELL
-      - curl -s http://localhost:5601/api/status
+      - curl -s --cacert config/certs/ca/ca.crt https://localhost:5601/api/status
       timeout: 10s
     hostname: host.docker.internal
     image: ${KIBANA_IMAGE}
@@ -195,6 +196,25 @@ services:
     user: "0"
     volumes:
     - certs:/usr/share/elasticsearch/config/certs
+  setup_kibana_space:
+    configs:
+    - mode: 0700
+      source: set-kibana-space-settings.sh
+      target: /bin/set-kibana-space-settings.sh
+    container_name: setup_kibana_space
+    depends_on:
+      kibana:
+        condition: service_healthy
+      setup_kibana_user:
+        condition: service_completed_successfully
+    environment:
+    - ELASTIC_PASSWORD
+    - KIBANA_PORT
+    hostname: host.docker.internal
+    image: pnnlmiscscripts/curl-jq
+    command: bash bin/set-kibana-space-settings.sh
+    volumes:
+    - certs:/usr/share/elasticsearch/config/certs
   setup_kibana_user:
     configs:
     - mode: 0700
@@ -212,7 +232,7 @@ services:
     image: pnnlmiscscripts/curl-jq
     command: bash bin/set-kibana-system-user-password.sh
     volumes:
-    - certs:/usr/share/elasticsearch/config/certs     
+    - certs:/usr/share/elasticsearch/config/certs
 volumes:
   bin:
     driver: local

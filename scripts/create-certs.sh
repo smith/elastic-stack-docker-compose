@@ -13,6 +13,7 @@ if [ ! -f config/certs/certs.zip ]; then
     "  - name: elasticsearch\n"\
     "    dns:\n"\
     "      - elasticsearch\n"\
+    "      - kibana\n"\
     "      - localhost\n"\
     "    ip:\n"\
     "      - 127.0.0.1\n"\
