@@ -210,6 +210,4 @@ xpack.security.encryptionKey: 944c9b01e335cf7eebcda4413797f494
 
 # Other xpack settings
 xpack.profiling.enabled: true
-xpack.reporting.roles.enabled: false
 xpack.screenshotting.browser.chromium.disableSandbox: true
-xpack.spaces.experimental.forceSolutionVisibility: true
