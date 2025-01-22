@@ -1,3 +1,6 @@
+# [OpenTelemetry collector configuration](https://opentelemetry.io/docs/collector/configuration/)
+#
+# The configuration for this environment attempts to track the Elastic default configurations in https://github.com/elastic/elastic-agent/tree/main/internal/pkg/otel/samples/linux, but with other enhancements.
 # [Receivers](https://github.com/open-telemetry/opentelemetry-collector/tree/main/receiver#readme)
 receivers:
   # [File Log Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/filelogreceiver/README.md)
@@ -10,36 +13,35 @@ receivers:
   # [Host Metrics Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/README.md)
   hostmetrics/system:
     collection_interval: 30s
-    root_path: /
     scrapers:
+      disk:
+      filesystem:
       cpu:
         metrics:
-          system.cpu.logical.count:
-            enabled: true
           system.cpu.utilization:
             enabled: true
-      disk: {}
-      filesystem: {}
-      load: {}
+          system.cpu.logical.count:
+            enabled: true
       memory:
         metrics:
           system.memory.utilization:
             enabled: true
-      network: {}
       process:
-        metrics:
-          process.disk.operations:
-            enabled: true
-          process.memory.utilization:
-            enabled: true
-          process.open_file_descriptors:
-            enabled: true
-          process.threads:
-            enabled: true
         mute_process_exe_error: true
         mute_process_io_error: true
         mute_process_user_error: true
-      processes: {}
+        metrics:
+          process.threads:
+            enabled: true
+          process.open_file_descriptors:
+            enabled: true
+          process.memory.utilization:
+            enabled: true
+          process.disk.operations:
+            enabled: true
+      network:
+      processes:
+      load:
   # [HTTP Check Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/httpcheckreceiver/README.md)
   # TODO: Route checks to different data streams
   httpcheck:
@@ -140,6 +142,17 @@ exporters:
 # [Service Section](https://opentelemetry.io/docs/collector/configuration/#service)
 service:
   pipelines:
+    metrics/hostmetrics:
+      receivers:
+      - hostmetrics/system
+      processors:
+      - elasticinframetrics
+      - resourcedetection
+      - attributes/dataset
+      - resource/process
+      exporters:
+      - elasticsearch
+      - debug
     metrics/httpcheck:
       receivers:
       - httpcheck
