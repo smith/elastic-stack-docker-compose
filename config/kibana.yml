@@ -108,11 +108,11 @@ elasticsearch.ssl.certificateAuthorities: [ "config/certs/ca/ca.crt" ]
 logging.root.level: warn
 
 # Enables you to specify a file where Kibana stores log output.
-#logging.appenders.default:
-#  type: file
-#  fileName: /var/logs/kibana.log
-#  layout:
-#    type: json
+logging.appenders.default:
+  type: file
+  fileName: /usr/share/kibana/logs/kibana.log
+  layout:
+    type: json
 
 # Example with size based log rotation
 #logging.appenders.default:

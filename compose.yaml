@@ -119,7 +119,8 @@ services:
     restart: unless-stopped
     volumes:
     - certs:/usr/share/kibana/config/certs
-    - kibanadata:/usr/share/kibana/data
+    - kibana_data:/usr/share/kibana/data
+    - kibana_logs:/usr/share/kibana/logs
   otelcol:
     # TODO: self monitoring
     # TODO: configure for APM
@@ -162,6 +163,7 @@ services:
     - ${DOCKER_SOCK}:/var/run/docker.sock:ro
     - certs:/usr/share/elastic-agent/config/certs
     - etc:/etc/elastic
+    - kibana_logs:/var/log/kibana
     - otel_registry:/usr/share/elastic-agent/otel_registry
   setup_api_key:
     command: bash /usr/share/elasticsearch/bin/create-api-key.sh
@@ -242,7 +244,9 @@ volumes:
     driver: local
   etc:
     driver: local
-  kibanadata:
+  kibana_data:
+    driver: local
+  kibana_logs:
     driver: local
   # See https://github.com/elastic/elastic-agent/blob/main/internal/pkg/otel/README.md#persistence-in-standalone-docker-mode
   otel_registry:

@@ -7,6 +7,7 @@ receivers:
   filelog/platformlogs:
     include:
     - /var/log/*.log
+    - /var/log/**/*.log
     retry_on_failure:
       enabled: true
     start_at: end
@@ -142,6 +143,13 @@ exporters:
 # [Service Section](https://opentelemetry.io/docs/collector/configuration/#service)
 service:
   pipelines:
+    logs/platformlogs:
+      receivers:
+      - filelog/platformlogs
+      processors:
+      - resourcedetection
+      exporters:
+      - elasticsearch
     metrics/hostmetrics:
       receivers:
       - hostmetrics/system
