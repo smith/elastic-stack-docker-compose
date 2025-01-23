@@ -11,6 +11,11 @@ receivers:
     retry_on_failure:
       enabled: true
     start_at: end
+  filelog/kibanalogs:
+    operators:
+    - type: json_parser
+    include:
+    - /var/log/kibana/kibana.log
   # [Host Metrics Receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/README.md)
   hostmetrics/system:
     collection_interval: 30s
@@ -78,6 +83,11 @@ processors:
     - action: upsert
       from_attribute: data_stream.dataset
       key: event.dataset
+  attributes/kibanalogs:
+    actions:
+    - action: upsert
+      key: data_stream.dataset
+      value: kibana
   # [Elastic Infra Metrics Processor](https://github.com/elastic/opentelemetry-collector-components/blob/main/processor/elasticinframetricsprocessor/README.md)
   elasticinframetrics: {}
   # [Resource Detection Processor](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/processor/resourcedetectionprocessor/README.md)
@@ -143,6 +153,14 @@ exporters:
 # [Service Section](https://opentelemetry.io/docs/collector/configuration/#service)
 service:
   pipelines:
+    logs/kibanalogs:
+      receivers:
+      - filelog/kibanalogs
+      processors:
+      - attributes/kibanalogs
+      - resourcedetection
+      exporters:
+      - elasticsearch
     logs/platformlogs:
       receivers:
       - filelog/platformlogs
