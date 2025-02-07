@@ -196,6 +196,9 @@ logging.appenders.default:
 # https://github.com/elastic/kibana/issues/192624
 # xpack.fleet.internal.registry.kibanaVersionCheckEnabled: false
 
+discover.experimental.enabledProfiles:
+  - traces-data-source-profile
+  
 # Advanced Settings overrides
 uiSettings.overrides.defaultRoute: /app/discover#/?_g=()&_a=(dataSource:(type:esql),filters:!(),query:(esql:'FROM%20logs-*%20%7C%20LIMIT%2010'))
 uiSettings.overrides.observability:enableInspectEsQueries: true

@@ -125,6 +125,11 @@ processors:
         os.type:
           enabled: true
   # [Resource Processor](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/resourceprocessor)
+  resource/kibanalogs:
+    attributes:
+    - action: insert
+      key: service.name
+      value: kibana
   resource/process:
     attributes:
     - action: delete
@@ -141,7 +146,7 @@ exporters:
     endpoint: https://elasticsearch:${env:ES_PORT}
     # api_key: (loaded from /etc/elastic/api_key.yaml)
     mapping:
-      mode: ecs
+      mode: otel
     logs_dynamic_index:
       enabled: true
     metrics_dynamic_index:
@@ -157,8 +162,10 @@ service:
       receivers:
       - filelog/kibanalogs
       processors:
+      - attributes/dataset
       - attributes/kibanalogs
       - resourcedetection
+      - resource/kibanalogs
       exporters:
       - elasticsearch
     logs/platformlogs:
@@ -182,6 +189,14 @@ service:
     metrics/httpcheck:
       receivers:
       - httpcheck
+      processors:
+      - resourcedetection
+      exporters:
+      - elasticsearch
+      - debug
+    traces/fromsdk:
+      receivers:
+      - otlp/fromsdk
       processors:
       - resourcedetection
       exporters:
