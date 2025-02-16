@@ -35,8 +35,10 @@ configs:
     file: config/kibana.yml
   node.options:
     file: config/node.options
+  logs_metrics_traces.yml:
+    file: config/otelcol/logs_metrics_traces.yml
   otelcol.yml:
-    file: config/otelcol.yml
+    file: config/otelcol/otelcol.yml
   set-kibana-system-user-password.sh:
     file: scripts/set-kibana-system-user-password.sh
   set-kibana-space-settings.sh:
@@ -125,10 +127,12 @@ services:
     # TODO: self monitoring
     # TODO: configure for APM
     # TODO: health check for otelcol
-    command: --config /etc/otelcol/config.yaml --config /etc/elastic/api_key.yaml
+    command: --config /etc/otelcol/logs_metrics_traces.yml --config /etc/otelcol/config.yml  --config /etc/elastic/api_key.yml
     configs:
+    - source: logs_metrics_traces.yml
+      target: /etc/otelcol/logs_metrics_traces.yml
     - source: otelcol.yml
-      target: /etc/otelcol/config.yaml
+      target: /etc/otelcol/config.yml
     container_name: "otelcol"
     depends_on:
       elasticsearch:
@@ -143,9 +147,10 @@ services:
       watch:
       - action: sync+restart
         path: config/otelcol.yml
-        target: /etc/otelcol/config.yaml
+        target: /etc/otelcol/config.yml
     environment:
     - ELASTIC_AGENT_OTEL
+    - ELASTIC_ENDPOINT
     - ELASTIC_PASSWORD
     - ES_PORT
     - KIBANA_PORT
@@ -163,7 +168,7 @@ services:
     - ${DOCKER_SOCK}:/var/run/docker.sock:ro
     - certs:/usr/share/elastic-agent/config/certs
     - etc:/etc/elastic
-    - kibana_logs:/var/log/kibana
+    - kibana_logs:/usr/share/elastic-agent/logs/kibana
     - otel_registry:/usr/share/elastic-agent/otel_registry
   setup_api_key:
     command: bash /usr/share/elasticsearch/bin/create-api-key.sh

@@ -1,9 +1,0 @@
-# [APM Server configuration](https://github.com/elastic/apm-server/blob/main/apm-server.yml)
-output.elasticsearch:
-  protocol: "https"
-  ssl.certificate_authorities: ["config/certs/ca/ca.crt"]
-  ssl.certificate: "config/certs/elasticsearch/elasticsearch.crt"
-  ssl.enabled: true
-  ssl.key: "config/certs/elasticsearch/elasticsearch.key"
-  ssl.verification_mode: certificate
-  username: "elastic"

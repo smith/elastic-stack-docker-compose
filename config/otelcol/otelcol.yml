@@ -7,7 +7,7 @@ receivers:
     operators:
       - type: json_parser
     include:
-      - /var/log/kibana/kibana.log
+      - /usr/share/elastic-agent/logs/kibana/*
     attributes:
       data_stream.dataset: kibana
     resource:
