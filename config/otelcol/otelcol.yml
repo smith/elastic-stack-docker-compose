@@ -55,6 +55,7 @@ receivers:
 processors:
   # [Resource Detection Processor](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/resourcedetectionprocessor#readme)
   resourcedetection:
+    detectors: ["system"]
 # [Exporters](https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter#readme)
 exporters:
   # [Debug exporter](https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/debugexporter/README.md)
