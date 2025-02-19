@@ -81,6 +81,7 @@ services:
     volumes:
     - certs:/usr/share/elasticsearch/config/certs
     - esdata:/usr/share/elasticsearch/data
+    - eslogs:/usr/share/elasticsearch/logs
   kibana:
     # TODO: Turn on EEM
     # TODO: Error initializing AI assistant resources: Platinum, Enterprise or trial license needed
@@ -167,6 +168,7 @@ services:
     - ${HOST_FILESYSTEM}:/hostfs:ro
     - ${DOCKER_SOCK}:/var/run/docker.sock:ro
     - certs:/usr/share/elastic-agent/config/certs
+    - eslogs:/usr/share/elastic-agent/logs/es
     - etc:/etc/elastic
     - kibana_logs:/usr/share/elastic-agent/logs/kibana
     - otel_registry:/usr/share/elastic-agent/otel_registry
@@ -246,6 +248,8 @@ volumes:
   certs:
     driver: local
   esdata:
+    driver: local
+  eslogs:
     driver: local
   etc:
     driver: local

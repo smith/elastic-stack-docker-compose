@@ -105,14 +105,23 @@ elasticsearch.ssl.certificateAuthorities: [ "config/certs/ca/ca.crt" ]
 
 # =================== System: Logging ===================
 # Set the value of this setting to off to suppress all logging output, or to debug to log everything. Defaults to 'info'
-logging.root.level: info
 
-# Enables you to specify a file where Kibana stores log output.
 logging.appenders.default:
   type: file
   fileName: /usr/share/kibana/logs/kibana.log
   layout:
     type: json
+
+logging.appenders.console:
+  type: console
+  layout:
+    type: pattern
+    pattern: "%date\t%level\t%logger\t%message"
+
+logging.loggers:
+  - name: root
+    level: warn
+    appenders: [default, console]
 
 # Example with size based log rotation
 #logging.appenders.default:

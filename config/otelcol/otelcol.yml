@@ -3,6 +3,13 @@
 # This is extra configuration meant to be loaded _after_ the copy of https://github.com/elastic/elastic-agent/tree/main/internal/pkg/otel/samples/linux/logs_metrics_traces.yml in this repository.
 # [Receivers](https://github.com/open-telemetry/opentelemetry-collector/tree/main/receiver#readme)
 receivers:
+  filelog/eslogs:
+    include:
+      - /usr/share/elastic-agent/logs/es/*
+    attributes:
+      data_stream.dataset: elasticsearch
+    resource:
+      service.name: elasticsearch
   filelog/kibanalogs:
     operators:
       - type: json_parser
@@ -72,6 +79,14 @@ exporters:
 # [Service Section](https://opentelemetry.io/docs/collector/configuration/#service)
 service:
   pipelines:
+    logs/eslogs:
+      receivers:
+        - filelog/eslogs
+      processors:
+        - resourcedetection
+      exporters:
+        - elasticsearch/otel
+        - debug
     logs/kibanalogs:
       receivers:
         - filelog/kibanalogs
@@ -100,4 +115,4 @@ service:
     logs:
       disable_stacktrace: true
       output_paths: ["stdout", "otelcol.log"]
-      level: INFO
+      level: WARN
