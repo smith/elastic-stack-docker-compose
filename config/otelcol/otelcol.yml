@@ -20,6 +20,8 @@ receivers:
     resource:
       service.name: kibana
   filelog/otelcollogs:
+    operators:
+      - type: json_parser
     include:
       - /usr/share/elastic-agent/otelcol.log
     attributes:
@@ -56,6 +58,8 @@ processors:
   # [Resource Detection Processor](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/resourcedetectionprocessor#readme)
   resourcedetection:
     detectors: ["system"]
+    system:
+      hostname_sources: ["os"]
 # [Exporters](https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter#readme)
 exporters:
   # [Debug exporter](https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/debugexporter/README.md)
@@ -115,5 +119,6 @@ service:
   telemetry:
     logs:
       disable_stacktrace: true
-      output_paths: ["stdout", "otelcol.log"]
+      encoding: json
+      output_paths: ["stdout", "stderr", "otelcol.log"]
       level: WARN

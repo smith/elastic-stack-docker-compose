@@ -115,8 +115,7 @@ logging.appenders.default:
 logging.appenders.console:
   type: console
   layout:
-    type: pattern
-    pattern: "%date\t%level\t%logger\t%message"
+    type: json
 
 logging.loggers:
   - name: root
