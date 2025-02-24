@@ -4,12 +4,12 @@
 receivers:
   # Receiver for platform specific log files
   filelog/platformlogs:
-    include: [/var/log/*.log]
+    include: [ /var/log/*.log ]
     retry_on_failure:
       enabled: true
     start_at: end
-    # storage: file_storage
-  #    start_at: beginning
+#    storage: file_storage
+#    start_at: beginning
 
   # Receiver for CPU, Disk, Memory, and Filesystem metrics
   hostmetrics/system:
@@ -368,7 +368,7 @@ exporters:
   #     enabled: true
 
   elasticsearch/otel:
-    endpoints: ["${env:ELASTIC_ENDPOINT}"]
+    endpoints: [ "${env:ELASTIC_ENDPOINT}" ]
     # api_key: ${env:ELASTIC_API_KEY}
     mapping:
       mode: otel
@@ -396,14 +396,8 @@ service:
 
     metrics/hostmetrics:
       receivers: [hostmetrics/system]
-      processors:
-        [
-          elasticinframetrics,
-          resourcedetection,
-          attributes/dataset,
-          resource/process,
-        ]
-      exporters: [elasticsearch/otel]
+      processors: [elasticinframetrics, resourcedetection, attributes/dataset, resource/process]
+      exporters: [elasticsearch/ecs]
 
     metrics/aggregated-metrics:
       receivers: [signaltometrics]
