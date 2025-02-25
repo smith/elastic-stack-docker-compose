@@ -397,7 +397,7 @@ service:
     metrics/hostmetrics:
       receivers: [hostmetrics/system]
       processors: [elasticinframetrics, resourcedetection, attributes/dataset, resource/process]
-      exporters: [elasticsearch/ecs]
+      exporters: [elasticsearch/otel]
 
     metrics/aggregated-metrics:
       receivers: [signaltometrics]
