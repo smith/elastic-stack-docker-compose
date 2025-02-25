@@ -43,7 +43,7 @@ receivers:
     #     cert_file: /usr/share/elastic-agent/config/certs/elasticsearch/elasticsearch.crt
     #     key_file: /usr/share/elastic-agent/config/certs/elasticsearch/elasticsearch.key
   hostmetrics/system:
-    root_path: /hostfs
+    root_path: /
   nop: {}
   # [OTLP Receiver](https://github.com/open-telemetry/opentelemetry-collector/blob/main/receiver/otlpreceiver/README.md)
   otlp/fromsdk:
@@ -57,12 +57,7 @@ receivers:
             - "https://*"
         endpoint: otelcol:${env:OTEL_COLLECTOR_PORT_HTTP}
 # [Processors](https://github.com/open-telemetry/opentelemetry-collector/tree/main/processor#readme)
-processors:
-  # [Resource Detection Processor](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/resourcedetectionprocessor#readme)
-  resourcedetection:
-    detectors: ["system"]
-    system:
-      hostname_sources: ["os"]
+processors: {}
 # [Exporters](https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter#readme)
 exporters:
   # [Debug exporter](https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/debugexporter/README.md)
@@ -70,17 +65,6 @@ exporters:
     verbosity: basic
   # [Elasticsearch exporter](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/exporter/elasticsearchexporter/README.md)
   elasticsearch/otel:
-    endpoints: ["${env:ELASTIC_ENDPOINT}"]
-    # api_key: (loaded from /etc/elastic/api_key.yml)
-
-    mapping:
-      mode: otel
-    logs_dynamic_index:
-      enabled: true
-    metrics_dynamic_index:
-      enabled: true
-    traces_dynamic_index:
-      enabled: true
     tls:
       ca_file: /usr/share/elastic-agent/config/certs/ca/ca.crt
       insecure_skip_verify: true
