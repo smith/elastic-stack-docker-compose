@@ -379,35 +379,4 @@ exporters:
     traces_dynamic_index:
       enabled: true
 
-service:
-  extensions: [file_storage]
-  pipelines:
-    traces/fromsdk:
-      receivers: [otlp/fromsdk]
-      processors: [elastictrace]
-      exporters: [signaltometrics, elasticsearch/otel]
-
-    metrics/fromsdk:
-      receivers: [otlp/fromsdk]
-      processors: []
-      exporters: [signaltometrics, elasticsearch/otel]
-
-    metrics/hostmetrics:
-      receivers: [hostmetrics/system]
-      processors: [elasticinframetrics, resourcedetection, attributes/dataset, resource/process]
-      exporters: [elasticsearch/ecs]
-
-    metrics/aggregated-metrics:
-      receivers: [signaltometrics]
-      processors: [batch/aggs, lsminterval]
-      exporters: [elasticsearch/otel]
-
-    logs/fromsdk:
-      receivers: [otlp/fromsdk]
-      processors: []
-      exporters: [signaltometrics, elasticsearch/otel]
-
-    logs/platformlogs:
-      receivers: [filelog/platformlogs]
-      processors: [resourcedetection]
-      exporters: [elasticsearch/otel]
+service: {}

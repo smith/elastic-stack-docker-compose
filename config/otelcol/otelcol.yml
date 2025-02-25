@@ -3,48 +3,6 @@
 # This is extra configuration meant to be loaded _after_ the copy of https://github.com/elastic/elastic-agent/tree/main/internal/pkg/otel/samples/linux/logs_metrics_traces.yml in this repository.
 # [Receivers](https://github.com/open-telemetry/opentelemetry-collector/tree/main/receiver#readme)
 receivers:
-  filelog/eslogs:
-    include:
-      - /usr/share/elastic-agent/logs/es/*
-    attributes:
-      data_stream.dataset: elasticsearch
-    resource:
-      service.name: elasticsearch
-  filelog/kibanalogs:
-    operators:
-      - type: json_parser
-    include:
-      - /usr/share/elastic-agent/logs/kibana/*
-    attributes:
-      data_stream.dataset: kibana
-    resource:
-      service.name: kibana
-  filelog/otelcollogs:
-    operators:
-      - type: json_parser
-    include:
-      - /usr/share/elastic-agent/otelcol.log
-    attributes:
-      data_stream.dataset: otelcol
-    resource:
-      service.name: otelcol
-  httpcheck:
-    targets:
-      - endpoint: https://elastic:${env:ELASTIC_PASSWORD}@elasticsearch:${env:ES_PORT}
-        tls:
-          ca_file: /usr/share/elastic-agent/config/certs/ca/ca.crt
-      - endpoint: https://kibana:${env:KIBANA_PORT}/api/status
-        tls:
-          ca_file: /usr/share/elastic-agent/config/certs/ca/ca.crt
-    # TODO: fix http check for collector (See https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/extension/healthcheckextension/README.md)
-    # - endpoint: http://otelcol:${env:OTEL_COLLECTOR_PORT_GRPC}
-    #   tls:
-    #     ca_file: /usr/share/elastic-agent/config/certs/ca/ca.crt
-    #     cert_file: /usr/share/elastic-agent/config/certs/elasticsearch/elasticsearch.crt
-    #     key_file: /usr/share/elastic-agent/config/certs/elasticsearch/elasticsearch.key
-  hostmetrics/system:
-    root_path: /
-  nop: {}
   # [OTLP Receiver](https://github.com/open-telemetry/opentelemetry-collector/blob/main/receiver/otlpreceiver/README.md)
   otlp/fromsdk:
     protocols:
@@ -57,59 +15,35 @@ receivers:
             - "https://*"
         endpoint: otelcol:${env:OTEL_COLLECTOR_PORT_HTTP}
 # [Processors](https://github.com/open-telemetry/opentelemetry-collector/tree/main/processor#readme)
-processors: {}
+processors:
+  elastictrace:
 # [Exporters](https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter#readme)
 exporters:
   # [Debug exporter](https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/debugexporter/README.md)
   debug:
-    verbosity: basic
+    verbosity: detailed
   # [Elasticsearch exporter](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/exporter/elasticsearchexporter/README.md)
   elasticsearch/otel:
+    endpoints: [ "${env:ELASTIC_ENDPOINT}" ]
+    mapping:
+      mode: none
+    logs_dynamic_index:
+      enabled: true
+    metrics_dynamic_index:
+      enabled: true
+    traces_dynamic_index:
+      enabled: true
     tls:
       ca_file: /usr/share/elastic-agent/config/certs/ca/ca.crt
       insecure_skip_verify: true
 # [Service Section](https://opentelemetry.io/docs/collector/configuration/#service)
 service:
   pipelines:
-    logs/eslogs:
-      receivers:
-        - filelog/eslogs
-      processors:
-        - resourcedetection
-      exporters:
-        - elasticsearch/otel
-        - debug
-    logs/kibanalogs:
-      receivers:
-        - filelog/kibanalogs
-      processors:
-        - resourcedetection
-      exporters:
-        - elasticsearch/otel
-        - debug
-    logs/otelcollogs:
-      receivers:
-        - filelog/otelcollogs
-      processors:
-        - resourcedetection
-      exporters:
-        - elasticsearch/otel
-        - debug
-    logs/platformlogs:
-      receivers: [nop]
-    metrics/httpcheck:
-      receivers:
-        - httpcheck
-      processors:
-        - resourcedetection
-      exporters:
-        - elasticsearch/otel
-        - debug
-    metrics/hostmetrics:
-      exporters: [elasticsearch/otel]
+    traces/fromsdk:
+      receivers: [otlp/fromsdk]
+      processors: []
+      exporters: [debug]
   telemetry:
     logs:
-      disable_stacktrace: true
-      encoding: json
       output_paths: ["stdout", "stderr", "otelcol.log"]
-      level: WARN
+      level: INFO
