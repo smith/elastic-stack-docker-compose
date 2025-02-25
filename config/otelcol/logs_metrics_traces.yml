@@ -8,7 +8,7 @@ receivers:
     retry_on_failure:
       enabled: true
     start_at: end
-#    storage: file_storage
+    storage: file_storage
 #    start_at: beginning
 
   # Receiver for CPU, Disk, Memory, and Filesystem metrics
@@ -50,9 +50,9 @@ receivers:
       grpc:
       http:
 
-# extensions:
-#   file_storage:
-#     directory: ${env:STORAGE_DIR}
+extensions:
+  file_storage:
+    directory: ${env:STORAGE_DIR}
 
 connectors:
   signaltometrics:
@@ -355,21 +355,21 @@ processors:
     timeout: 10s
 
 exporters:
-  # elasticsearch/ecs:
-  #   endpoints: ["${env:ELASTIC_ENDPOINT}"]
-  #   api_key: ${env:ELASTIC_API_KEY}
-  #   mapping:
-  #     mode: ecs
-  #   logs_dynamic_index:
-  #     enabled: true
-  #   metrics_dynamic_index:
-  #     enabled: true
-  #   traces_dynamic_index:
-  #     enabled: true
+  elasticsearch/ecs:
+    endpoints: ["${env:ELASTIC_ENDPOINT}"]
+    api_key: ${env:ELASTIC_API_KEY}
+    mapping:
+      mode: ecs
+    logs_dynamic_index:
+      enabled: true
+    metrics_dynamic_index:
+      enabled: true
+    traces_dynamic_index:
+      enabled: true
 
   elasticsearch/otel:
     endpoints: [ "${env:ELASTIC_ENDPOINT}" ]
-    # api_key: ${env:ELASTIC_API_KEY}
+    api_key: ${env:ELASTIC_API_KEY}
     mapping:
       mode: otel
     logs_dynamic_index:
@@ -378,11 +378,9 @@ exporters:
       enabled: true
     traces_dynamic_index:
       enabled: true
-    tls:
-      ca_file: /usr/share/elastic-agent/config/certs/ca/ca.crt
-      insecure_skip_verify: true
+
 service:
-  # extensions: [file_storage]
+  extensions: [file_storage]
   pipelines:
     traces/fromsdk:
       receivers: [otlp/fromsdk]
@@ -397,7 +395,7 @@ service:
     metrics/hostmetrics:
       receivers: [hostmetrics/system]
       processors: [elasticinframetrics, resourcedetection, attributes/dataset, resource/process]
-      exporters: [elasticsearch/otel]
+      exporters: [elasticsearch/ecs]
 
     metrics/aggregated-metrics:
       receivers: [signaltometrics]

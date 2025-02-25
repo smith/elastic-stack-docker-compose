@@ -42,6 +42,9 @@ receivers:
     #     ca_file: /usr/share/elastic-agent/config/certs/ca/ca.crt
     #     cert_file: /usr/share/elastic-agent/config/certs/elasticsearch/elasticsearch.crt
     #     key_file: /usr/share/elastic-agent/config/certs/elasticsearch/elasticsearch.key
+  hostmetrics/system:
+    root_path: /hostfs
+  nop: {}
   # [OTLP Receiver](https://github.com/open-telemetry/opentelemetry-collector/blob/main/receiver/otlpreceiver/README.md)
   otlp/fromsdk:
     protocols:
@@ -108,6 +111,8 @@ service:
       exporters:
         - elasticsearch/otel
         - debug
+    logs/platformlogs:
+      receivers: [nop]
     metrics/httpcheck:
       receivers:
         - httpcheck
@@ -116,6 +121,8 @@ service:
       exporters:
         - elasticsearch/otel
         - debug
+    metrics/hostmetrics:
+      exporters: [elasticsearch/otel]
   telemetry:
     logs:
       disable_stacktrace: true
