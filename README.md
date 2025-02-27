@@ -29,6 +29,25 @@ Runs:
 * Adjust configuration in the files in this repository for your needs
 * If you have improvements or fixes, open a pull request to https://github.com/smith/elastic-stack-docker-compose
 
+#### OpenTelemetry Demo
+
+To send data from the [OpenTelemetry Demo](https://opentelemetry.io/ecosystem/demo/) to this cluster, check out a copy of the demo, and update [src/otel-collector/otelcol-config-extras.yml](https://github.com/open-telemetry/opentelemetry-demo/blob/main/src/otel-collector/otelcol-config-extras.yml]):
+
+```yaml
+exporters:
+  otlp:
+    endpoint: "http://host.docker.internal:4317"
+
+service:
+  pipelines:
+    metrics:
+      exporters: [otlp, debug]
+    logs:
+      exporters: [otlp, debug]
+```
+
+`docker compose up` to start the demo. It will send all data from the demo's collector over OTLP to ours.
+
 #### Kibana TLS
 
 Kibana is configured for HTTP2 by default. The HTTPS connection will not be trusted unless you configure your operating system to trust the certificate.
