@@ -9,5 +9,11 @@ curl --no-progress-meter --fail -X POST \
     "https://elasticsearch:$ES_PORT/_security/api_key" \
     --data @/etc/elastic/api_key_create_params.json | \
 jq --raw-output .encoded | \
-(echo -ne "exporters:\n  elasticsearch/otel:\n    api_key: " && cat) \
-> /etc/elastic/api_key.yml
+(
+cat <<EOF
+exporters:
+  elasticsearch/ecs: &api_key
+    api_key: $(cat)
+  elasticsearch/otel: *api_key
+EOF
+) > /etc/elastic/api_key.yml

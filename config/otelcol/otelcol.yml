@@ -64,6 +64,10 @@ exporters:
   debug:
     verbosity: basic
   # [Elasticsearch exporter](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/exporter/elasticsearchexporter/README.md)
+  elasticsearch/ecs:
+    tls:
+      ca_file: /usr/share/elastic-agent/config/certs/ca/ca.crt
+      insecure_skip_verify: true
   elasticsearch/otel:
     tls:
       ca_file: /usr/share/elastic-agent/config/certs/ca/ca.crt
@@ -105,8 +109,6 @@ service:
       exporters:
         - elasticsearch/otel
         - debug
-    metrics/hostmetrics:
-      exporters: [elasticsearch/otel]
   telemetry:
     logs:
       disable_stacktrace: true
