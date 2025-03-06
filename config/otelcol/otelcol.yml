@@ -13,6 +13,8 @@ receivers:
   filelog/kibanalogs:
     operators:
       - type: json_parser
+        severity:
+          parse_from: attributes.log.level
     include:
       - /usr/share/elastic-agent/logs/kibana/*
     attributes:
@@ -22,6 +24,8 @@ receivers:
   filelog/otelcollogs:
     operators:
       - type: json_parser
+        severity:
+          parse_from: attributes.level
     include:
       - /usr/share/elastic-agent/otelcol.log
     attributes:
