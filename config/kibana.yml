@@ -210,7 +210,7 @@ discover.experimental.enabledProfiles:
 # Advanced Settings overrides
 uiSettings.overrides.defaultRoute: /app/discover#/?_g=()&_a=(dataSource:(type:esql),filters:!(),query:(esql:'FROM%20logs-*%20%7C%20LIMIT%2010'))
 uiSettings.overrides.observability:enableInspectEsQueries: true
-uiSettings.overrides.observability:entityCentricExperience: true
+uiSettings.overrides.observability:entityCentricExperience: false
 uiSettings.overrides.observability:newLogsOverview: true
 uiSettings.overrides.theme:darkMode: system
 
