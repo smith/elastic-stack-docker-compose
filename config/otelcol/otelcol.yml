@@ -6,9 +6,8 @@ receivers:
   filelog/eslogs:
     include:
       - /usr/share/elastic-agent/logs/es/*
-    attributes:
+    resource:      
       data_stream.dataset: elasticsearch
-    resource:
       db.system.name: elasticsearch
       elasticsearch.node.name: elastic-stack-docker-compose-es-node-0
       service.name: elasticsearch
@@ -19,9 +18,8 @@ receivers:
           parse_from: attributes.log.level
     include:
       - /usr/share/elastic-agent/logs/kibana/*
-    attributes:
-      data_stream.dataset: kibana
     resource:
+      data_stream.dataset: kibana
       service.name: kibana
   filelog/otelcollogs:
     operators:
@@ -30,9 +28,8 @@ receivers:
           parse_from: attributes.level
     include:
       - /usr/share/elastic-agent/otelcol.log
-    attributes:
-      data_stream.dataset: otelcol
     resource:
+      data_stream.dataset: otelcol
       service.name: otelcol
   httpcheck:
     targets:
