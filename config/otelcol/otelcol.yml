@@ -6,7 +6,7 @@ receivers:
   filelog/eslogs:
     include:
       - /usr/share/elastic-agent/logs/es/*
-    resource:      
+    resource:
       data_stream.dataset: elasticsearch
       db.system.name: elasticsearch
       elasticsearch.node.name: elastic-stack-docker-compose-es-node-0
@@ -79,6 +79,10 @@ exporters:
     tls:
       ca_file: /usr/share/elastic-agent/config/certs/ca/ca.crt
       insecure_skip_verify: true
+  otlp/apmserver:
+    endpoint: apmserver:${env:ELASTIC_APM_SERVER_PORT}
+    tls:
+      insecure: true
 # [Service Section](https://opentelemetry.io/docs/collector/configuration/#service)
 service:
   pipelines:
@@ -116,9 +120,24 @@ service:
       exporters:
         - elasticsearch/otel
         - debug
+    # Send traces to APM server
+    # traces/fromsdk:
+    #   receivers:
+    #     - otlp/fromsdk
+    #   processors: []
+    #   exporters:
+    #     - otlp/apmserver
+    #     - debug
   telemetry:
     logs:
       disable_stacktrace: true
       encoding: json
       output_paths: ["stdout", "stderr", "otelcol.log"]
       level: WARN
+    metrics:
+      readers:
+        - periodic:
+            exporter:
+              otlp:
+                protocol: http/protobuf
+                endpoint: otelcol:${env:OTEL_COLLECTOR_PORT_HTTP}

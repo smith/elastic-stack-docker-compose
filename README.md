@@ -74,6 +74,14 @@ To collect [Docker Compose metrics](https://docs.docker.com/engine/cli/otel/), s
 
 If you don't need a particular service (let's say you already have Kibana running in dev mode), you can add `scale: 0` to the service definition to prevent it from being started when `docker compose up` is run. You can also run `docker compose stop SERVICE_NAME` to stop an individual service.
 
+#### Elastic APM Server
+
+[Elastic APM Server](https://www.elastic.co/guide/en/observability/current/apm-getting-started-apm-server.html#apm-setup-apm-server-binary) is included for testing with legacy scenarios.
+
+By default the `apmserver` section in [compose.yml](./compose.yaml) contains `scale: 0`. Increase this number in the compose.yaml or run `docker compose scale apmserver=1`.
+
+To configure the OpenTelemetry collector to send data to the APM Server, uncomment the `traces/fromsdk` pipeline under the `# Send traces to APM server` comment.
+
 #### Updating image
 
 In [.env](./env) the default image variables look like this:
@@ -97,7 +105,8 @@ You can omit `kibana` to update all images.
 * Any OpenTelemetry log or metric data sent to localhost:4317-4318 (use `host.docker.internal` from containers.)
 * [HTTP checks](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/httpcheckreceiver/README.md) for Elasticsearch and Kibana. These metrics go to the `metrics-generic-default` data stream with `http` and `httpcheck` fields.
 * [Host metrics](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/hostmetricsreceiver). These are processed with the [Elastic Infra Metrics Processor](https://github.com/elastic/opentelemetry-collector-components/blob/main/processor/elasticinframetricsprocessor/README.md)
-* Logs from Elasticsearch, Kibana, and the OpenTelemetry Collector.
+* [OpenTelemetry collector internal logs and metrics](https://opentelemetry.io/docs/collector/internal-telemetry/)
+* Logs from Elasticsearch and Kibana
 
 ## Upstream docker-compose.yml configurations
 

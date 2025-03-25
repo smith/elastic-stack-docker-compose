@@ -25,6 +25,8 @@ configs:
           }
         }
       }
+  apm-server.yml:
+    file: config/apm-server.yml
   create-api-key.sh:
     file: scripts/create-api-key.sh
   create-certs.sh:
@@ -44,6 +46,33 @@ configs:
   set-kibana-space-settings.sh:
     file: scripts/set-kibana-space-settings.sh
 services:
+  apmserver:
+    configs:
+    - source: apm-server.yml
+      target: /usr/share/apm-server/apm-server.yml
+    container_name: apmserver
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      setup_api_key:
+        condition: service_completed_successfully
+    deploy:
+      resources:
+        limits:
+          memory: 200M
+    environment:
+    - ELASTIC_APM_SERVER_PORT
+    - ELASTIC_PASSWORD
+    - ES_PORT
+    hostname: host.docker.internal
+    image: ${ELASTIC_APM_SERVER_IMAGE}
+    ports:
+    - "${ELASTIC_APM_SERVER_PORT}:${ELASTIC_APM_SERVER_PORT}"
+    restart: unless-stopped
+    user: 0:0
+    volumes:
+    - certs:/usr/share/apm-server/config/certs
+    - etc:/etc/elastic
   elasticsearch:
     configs:
     - source: elasticsearch.yml
@@ -83,6 +112,7 @@ services:
     - esdata:/usr/share/elasticsearch/data
     - eslogs:/usr/share/elasticsearch/logs
   kibana:
+    scale: 0
     # TODO: Turn on EEM
     # TODO: Error initializing AI assistant resources: Platinum, Enterprise or trial license needed
     # TODO generate encryption keys
@@ -125,7 +155,6 @@ services:
     - kibana_data:/usr/share/kibana/data
     - kibana_logs:/usr/share/kibana/logs
   otelcol:
-    # TODO: self monitoring
     # TODO: configure for APM
     # TODO: health check for otelcol
     command: --config /etc/otelcol/logs_metrics_traces.yml --config /etc/otelcol/config.yml  --config /etc/elastic/api_key.yml
@@ -152,6 +181,7 @@ services:
     environment:
     - ELASTIC_AGENT_OTEL
     - ELASTIC_API_KEY=x # This is overriden and ignored
+    - ELASTIC_APM_SERVER_PORT
     - ELASTIC_ENDPOINT
     - ELASTIC_PASSWORD
     - ES_PORT

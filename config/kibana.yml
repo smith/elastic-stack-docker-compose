@@ -98,7 +98,7 @@ elasticsearch.username: "kibana_system"
 
 # Enables you to specify a path to the PEM file for the certificate
 # authority for your Elasticsearch instance.
-elasticsearch.ssl.certificateAuthorities: [ "config/certs/ca/ca.crt" ]
+elasticsearch.ssl.certificateAuthorities: ["config/certs/ca/ca.crt"]
 
 # To disregard the validity of SSL certificates, change this setting's value to 'none'.
 #elasticsearch.ssl.verificationMode: full
@@ -205,8 +205,10 @@ logging.loggers:
 # xpack.fleet.internal.registry.kibanaVersionCheckEnabled: false
 
 discover.experimental.enabledProfiles:
-  - traces-data-source-profile
-  
+  - observability-traces-data-source-profile
+  - observability-traces-transaction-document-profile
+  - observability-traces-span-document-profile
+
 # Advanced Settings overrides
 uiSettings.overrides.defaultRoute: /app/discover#/?_g=()&_a=(dataSource:(type:esql),filters:!(),query:(esql:'FROM%20logs-*%20%7C%20LIMIT%2010'))
 uiSettings.overrides.observability:enableInspectEsQueries: true
