@@ -141,3 +141,10 @@ service:
               otlp:
                 protocol: http/protobuf
                 endpoint: otelcol:${env:OTEL_COLLECTOR_PORT_HTTP}
+    traces:
+      processors:
+        - simple:
+            exporter:
+              otlp:
+                protocol: http/protobuf
+                endpoint: otelcol:${env:OTEL_COLLECTOR_PORT_HTTP}
