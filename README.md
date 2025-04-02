@@ -105,7 +105,7 @@ You can omit `kibana` to update all images.
 * Any OpenTelemetry log or metric data sent to localhost:4317-4318 (use `host.docker.internal` from containers.)
 * [HTTP checks](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/httpcheckreceiver/README.md) for Elasticsearch and Kibana. These metrics go to the `metrics-generic-default` data stream with `http` and `httpcheck` fields.
 * [Host metrics](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/hostmetricsreceiver). These are processed with the [Elastic Infra Metrics Processor](https://github.com/elastic/opentelemetry-collector-components/blob/main/processor/elasticinframetricsprocessor/README.md)
-* [OpenTelemetry collector internal logs and metrics](https://opentelemetry.io/docs/collector/internal-telemetry/)
+* [OpenTelemetry collector internal logs, metrics and traces](https://opentelemetry.io/docs/collector/internal-telemetry/)
 * Logs from Elasticsearch and Kibana
 
 ## Upstream docker-compose.yml configurations
