@@ -1,0 +1,148 @@
+pf-elastic-collector:
+  # Defines the host and port the server is listening on.
+  host: "0.0.0.0:8260"
+
+  # Verbose log output option.
+  #verbose: true
+
+  # Configure metrics exposition. Both expvar and Prometheus formats are supported. Both can be
+  # configured at the same time. By default, no metrics are exposed.
+  # 'prometheus_host' can only be configured with a 'host:port' pair.
+  # 'expvar_host' can be configured either with a 'host:port' pair or with a Unix Domain Socket path (with a  'unix://' prefix).
+  # When host:port is used, an HTTP server is exposed. The server does not support TLS.
+  # An empty value disables metrics exposition for the corresponding format.
+  #metrics:
+  #  prometheus_host: 'localhost:9090'
+  #  expvar_host: unix:///tmp/collector-metrics.sock
+
+  # Define the suggested upper limit of memory that pf-elastic-collector should apply. Using a lower
+  # amount of memory might trigger garbage collection more often.
+  #memory_limit: 500M
+
+  # Agent authorization configuration. If no methods are defined, all requests will be allowed.
+  auth:
+    # Define a shared secret token for authorizing agents.
+    secret_token: ""
+
+  # Controls storage of Universal Profiling agent metrics/metadata to the customer's cluster and to a
+  # cluster controlled by Elastic. By default, the full set of metrics and metadata is written to
+  # an Elastic-controlled cluster, and a subset of metrics and metadata to the customer
+  # cluster. These are used to monitor agent health and debug/resolve issues.
+  agent_metrics:
+    # Do not write Universal Profiling agent metrics/metadata to a centralized (non-customer controlled)
+    # cluster. This does not affect writing metrics/metadata to the customer cluster.
+    #disable: false
+
+    # Write full set of Universal Profiling agent metrics to the customer ES cluster. If false, which
+    # is the default, only a limited set of CPU usage and I/O metrics will be written.
+    #write_all: false
+
+  # Enable secure communication between pf-host-agent and pf-elastic-collector.
+  ssl:
+    enabled: false
+
+    # Path to file containing the certificate for server authentication.
+    # Needs to be configured when ssl is enabled.
+    #certificate: ''
+
+    # Path to file containing server certificate key.
+    # Needs to be configured when ssl is enabled.
+    #key: ''
+
+    # Optional configuration options for ssl communication.
+
+    # Passphrase for decrypting the Certificate Key.
+    # It is recommended to use the provided keystore instead of entering the passphrase in plain text.
+    #key_passphrase: ''
+
+    # List of supported/valid protocol versions. By default TLS versions 1.3 is enabled.
+    #supported_protocols: [TLSv1.3]
+
+    # Configure cipher suites to be used for SSL connections.
+    # Note that cipher suites are not configurable for TLS 1.3.
+    #cipher_suites: []
+
+    # Configure curve types for ECDHE based cipher suites.
+    #curve_types: []
+
+#================================ Outputs =================================
+
+# Configure the output to use when sending the data collected by pf-elastic-collector.
+
+#-------------------------- Elasticsearch output --------------------------
+output:
+  elasticsearch:
+    # Array of hosts to connect to.
+    # Scheme and port can be left out and will be set to the default (`http` and `9200`).
+    # In case you specify an additional path, the scheme is required: `http://localhost:9200/path`.
+    # IPv6 addresses should always be defined as: `https://[2001:db8::1]:9200`.
+    hosts: ["localhost:9200"]
+
+    # Set gzip compression level.
+    #compression_level: 0
+
+    # Protocol - either `http` (default) or `https`.
+    protocol: "https"
+
+    # Authentication credentials - either API key or username/password.
+    #api_key: "id:api_key"
+
+    # Optional HTTP Path.
+    #path: "/elasticsearch"
+
+    # Proxy server url.
+    #proxy_url: http://proxy:3128
+
+    # The number of times a particular Elasticsearch index operation is attempted. If
+    # the indexing operation doesn't succeed after this many retries, the events are
+    # dropped. The default is 3.
+    #max_retries: 3
+
+    # Enable custom SSL settings. Set to false to ignore custom SSL settings for secure communication.
+    #ssl.enabled: true
+
+    # Optional SSL configuration options. SSL is off by default, change the `protocol` option if you want to enable `https`.
+    #
+    # Control the verification of Elasticsearch certificates. Valid values are:
+    # * full, which verifies that the provided certificate is signed by a trusted
+    # authority (CA) and also verifies that the server's hostname (or IP address)
+    # matches the names identified within the certificate.
+    # * strict, which verifies that the provided certificate is signed by a trusted
+    # authority (CA) and also verifies that the server's hostname (or IP address)
+    # matches the names identified within the certificate. If the Subject Alternative
+    # Name is empty, it returns an error.
+    # * certificate, which verifies that the provided certificate is signed by a
+    # trusted authority (CA), but does not perform any hostname verification.
+    #  * none, which performs no verification of the server's certificate. This
+    # mode disables many of the security benefits of SSL/TLS and should only be used
+    # after very careful consideration. It is primarily intended as a temporary
+    # diagnostic mechanism when attempting to resolve TLS errors; its use in
+    # production environments is strongly discouraged.
+    #ssl.verification_mode: full
+
+    # List of supported/valid TLS versions. By default all TLS versions 1.0 up to
+    # 1.2 are enabled.
+    #ssl.supported_protocols: [TLSv1.0, TLSv1.1, TLSv1.2]
+
+    # List of root certificates for HTTPS server verifications.
+    #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
+
+    # Certificate for SSL client authentication.
+    #ssl.certificate: "/etc/pki/client/cert.pem"
+
+    # Client Certificate Key
+    #ssl.key: "/etc/pki/client/cert.key"
+
+    # Optional passphrase for decrypting the Certificate Key.
+    # It is recommended to use the provided keystore instead of entering the passphrase in plain text.
+    #ssl.key_passphrase: ''
+
+    # Configure cipher suites to be used for SSL connections.
+    #ssl.cipher_suites: []
+
+    # Configure curve types for ECDHE based cipher suites.
+    #ssl.curve_types: []
+
+    # Configure what types of renegotiation are supported. Valid options are
+    # never, once, and freely. Default is never.
+    #ssl.renegotiation: never

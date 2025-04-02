@@ -35,6 +35,10 @@ configs:
     file: config/otelcol/logs_metrics_traces.yml
   otelcol.yml:
     file: config/otelcol/otelcol.yml
+  pf-elastic-collector.yml:
+    file: config/pf-elastic-collector.yml
+  pf-elastic-symbolizer.yml:
+    file: config/pf-elastic-symbolizer.yml
   set-kibana-system-user-password.sh:
     file: scripts/set-kibana-system-user-password.sh
   set-kibana-space-settings.sh:
@@ -192,6 +196,32 @@ services:
     - etc:/etc/elastic
     - kibana_logs:/usr/share/elastic-agent/logs/kibana
     - otel_registry:/usr/share/elastic-agent/otel_registry
+  profiling_collector:
+    scale: 1
+    command: -c /etc/Elastic/universal-profiling/pf-elastic-collector.yml
+    configs:
+    - source: pf-elastic-collector.yml
+      target: /etc/Elastic/universal-profiling/pf-elastic-collector.yml
+    container_name: "profiling_collector"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      setup_api_key:
+        condition: service_completed_successfully    
+    hostname: host.docker.internal
+    image: ${ELASTIC_PROFILING_COLLECTOR_IMAGE}
+    ports:
+    - "${ELASTIC_PROFILING_COLLECTOR_PORT}:${ELASTIC_PROFILING_COLLECTOR_PORT}"
+    restart: unless-stopped
+  profiling_symbolizer:
+    scale: 0
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      setup_api_key:
+        condition: service_completed_successfully    
+    hostname: host.docker.internal
+    image: ${ELASTIC_PROFILING_SYMBOLIZER_IMAGE}
   setup_api_key:
     command: bash /usr/share/elasticsearch/bin/create-api-key.sh
     configs:
