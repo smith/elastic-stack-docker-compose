@@ -1,9 +1,3 @@
-# Copyright Nathan L Smith <smith@nlsmith.com>
-# SPDX-License-Identifier: Apache-2.0
-
-# TODO: Otel export logs from docker compose?
-# TODO: Issue with slave when running otel demo https://elastic.slack.com/archives/C031284ANNL/p1728500190563419
-
 # [Compose file](https://docs.docker.com/reference/compose-file/) for Elastic stack
 name: elastic-stack-docker-compose
 include:
@@ -58,11 +52,7 @@ services:
       - esdata:/usr/share/elasticsearch/data
       - eslogs:/usr/share/elasticsearch/logs
   kibana:
-    # TODO: Turn on EEM
-    # TODO: Error initializing AI assistant resources: Platinum, Enterprise or trial license needed
     # TODO generate encryption keys
-    # TODO: Set up alerts for services/hosts on boot
-    # TODO: inspect logs queries to the kibana console but it should do them at DEBUG level not WARN
     configs:
       - source: kibana.yml
         target: /usr/share/kibana/config/kibana.yml
