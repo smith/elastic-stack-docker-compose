@@ -6,8 +6,6 @@ configs:
     file: config/otelcol/otelcol.yml
 services:
   otelcol:
-    # TODO: configure for APM
-    # TODO: health check for otelcol
     command: --config /etc/otelcol/logs_metrics_traces.yml --config /etc/otelcol/config.yml  --config /etc/elastic/api_key.yml
     configs:
       - source: logs_metrics_traces.yml
