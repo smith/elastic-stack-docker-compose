@@ -1,4 +1,5 @@
 # Elastic Stack Docker Compose
+
 [![OpenTelemetry collector configuration on OTelBin](https://www.otelbin.io/badges/collector-config)](https://www.otelbin.io/s/f508f8ba981f3e209723054e71d6bcfef478ed70)
 
 [Docker Compose](https://docs.docker.com/compose/) configuration to run the [Elastic Stack](https://www.elastic.co/elastic-stack/) components.
@@ -11,23 +12,23 @@ This is meant to be a development and demo environment to solve these problems:
 
 Runs:
 
-* [Elasticsearch](https://www.elastic.co/elasticsearch)
-* [The Elastic Distribution of OpenTelemetry Collector](https://github.com/elastic/opentelemetry)
-* [Kibana](https://www.elastic.co/kibana)
+- [Elasticsearch](https://www.elastic.co/elasticsearch)
+- [The Elastic Distribution of OpenTelemetry Collector](https://github.com/elastic/opentelemetry)
+- [Kibana](https://www.elastic.co/kibana)
 
 ### Requirements
 
-* [Docker Compose](https://docs.docker.com/compose/)
+- [Docker Compose](https://docs.docker.com/compose/)
 
 ### Usage
 
-* Clone this repository
-* `cd elastic-stack-docker-compose`
-* `docker compose up`
-* Open https://localhost:5601
-* Log in with `elastic`/`changeme`
-* Adjust configuration in the files in this repository for your needs
-* If you have improvements or fixes, open a pull request to https://github.com/smith/elastic-stack-docker-compose
+- Clone this repository
+- `cd elastic-stack-docker-compose`
+- `docker compose up`
+- Open https://localhost:5601
+- Log in with `elastic`/`changeme`
+- Adjust configuration in the files in this repository for your needs
+- If you have improvements or fixes, open a pull request to https://github.com/smith/elastic-stack-docker-compose
 
 #### OpenTelemetry Demo
 
@@ -102,19 +103,33 @@ You can omit `kibana` to update all images.
 
 ## Data collected
 
-* Any OpenTelemetry log or metric data sent to localhost:4317-4318 (use `host.docker.internal` from containers.)
-* [HTTP checks](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/httpcheckreceiver/README.md) for Elasticsearch and Kibana. These metrics go to the `metrics-generic-default` data stream with `http` and `httpcheck` fields.
-* [Host metrics](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/hostmetricsreceiver). These are processed with the [Elastic Infra Metrics Processor](https://github.com/elastic/opentelemetry-collector-components/blob/main/processor/elasticinframetricsprocessor/README.md)
-* [OpenTelemetry collector internal logs and metrics](https://opentelemetry.io/docs/collector/internal-telemetry/)
-* Logs from Elasticsearch and Kibana
+- Any OpenTelemetry log or metric data sent to localhost:4317-4318 (use `host.docker.internal` from containers.)
+- [HTTP checks](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/httpcheckreceiver/README.md) for Elasticsearch and Kibana. These metrics go to the `metrics-generic-default` data stream with `http` and `httpcheck` fields.
+- [Host metrics](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/hostmetricsreceiver). These are processed with the [Elastic Infra Metrics Processor](https://github.com/elastic/opentelemetry-collector-components/blob/main/processor/elasticinframetricsprocessor/README.md)
+- [OpenTelemetry collector internal logs and metrics](https://opentelemetry.io/docs/collector/internal-telemetry/)
+- Logs from Elasticsearch and Kibana
 
 ## Upstream docker-compose.yml configurations
 
 This compose.yaml is based on these sources:
 
-* [Elasticsearch](https://github.com/elastic/elasticsearch/blob/8b09e9119d17dcf82a67aaefdcd5ce224a5c8598/docs/reference/setup/install/docker/docker-compose.yml)
-* [OpenTelemetry Demo](https://github.com/elastic/opentelemetry-demo/blob/main/docker-compose.yml)
+- [Elasticsearch](https://github.com/elastic/elasticsearch/blob/8b09e9119d17dcf82a67aaefdcd5ce224a5c8598/docs/reference/setup/install/docker/docker-compose.yml)
+- [OpenTelemetry Demo](https://github.com/elastic/opentelemetry-demo/blob/main/docker-compose.yml)
 
 ## Why doesn't this use Kubernetes?
 
 If you need Kubernetes, you should use it. See the [Elastic Kubernetes documentation](https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-deploy-elasticsearch.html). This is a simpler environment meant to run on a single computer.
+
+## Profiling
+
+Universal Profiling services are not started by default. To **start** them run:
+
+```
+docker compose --profile profiling up
+```
+
+To **stop** profiling services run:
+
+```
+docker compose stop setup_universal_profiling profiling-collector profiling-agent linux-vm
+```

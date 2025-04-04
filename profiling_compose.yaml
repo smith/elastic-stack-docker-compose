@@ -21,11 +21,15 @@ services:
       - KIBANA_PORT
     hostname: host.docker.internal
     image: pnnlmiscscripts/curl-jq
+    profiles:
+      - profiling
     command: bash bin/initialize_universal_profiling.sh
     volumes:
       - certs:/usr/share/elasticsearch/config/certs
   profiling-collector:
     image: docker.elastic.co/observability/profiling-collector:8.17.0
+    profiles:
+      - profiling
     container_name: profiling-collector
     restart: unless-stopped
     depends_on:
@@ -40,6 +44,8 @@ services:
     command: ["-c", "/pf-elastic-collector.yml"]
   linux-vm:
     image: justincormack/nsenter1
+    profiles:
+      - profiling
     container_name: linux-vm
     privileged: true
     pid: "host"
@@ -56,6 +62,8 @@ services:
     command: ["/bin/sh", "-c", "sleep infinity"]
   profiling-agent:
     image: docker.elastic.co/observability/profiling-agent:9.1.0-SNAPSHOT
+    profiles:
+      - profiling
     container_name: profiling-host-agent
     depends_on:
       - linux-vm
