@@ -1,0 +1,99 @@
+name: elastic-configuration-docker-compose
+configs:
+  api_key_create_params.json:
+    content: |
+      {
+        "name": "elastic-stack-docker-compose-api-key",
+        "role_descriptors": {       
+          "standalone_agent": { 
+            "cluster": ["monitor"], 
+            "indices": [{
+              "names": ["logs-*-*", "metrics-*-*", "traces-*-*"], 
+              "privileges": ["auto_configure", "create_doc"], 
+              "allow_restricted_indices": false }],
+            "applications": [],
+            "run_as": [],
+            "metadata": {},
+            "transient_metadata": { "enabled": true }
+          }
+        }
+      }
+  create-api-key.sh:
+    file: scripts/create-api-key.sh
+  create-certs.sh:
+    file: scripts/create-certs.sh
+  set-kibana-system-user-password.sh:
+    file: scripts/set-kibana-system-user-password.sh
+  set-kibana-space-settings.sh:
+    file: scripts/set-kibana-space-settings.sh
+services:
+  setup_api_key:
+    command: bash /usr/share/elasticsearch/bin/create-api-key.sh
+    configs:
+      - source: api_key_create_params.json
+        target: /etc/elastic/api_key_create_params.json
+      - mode: 0700
+        source: create-api-key.sh
+        target: /usr/share/elasticsearch/bin/create-api-key.sh
+    container_name: "setup_api_key"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      - ELASTIC_PASSWORD
+      - ES_PORT
+    hostname: host.docker.internal
+    image: pnnlmiscscripts/curl-jq
+    user: "0"
+    volumes:
+      - certs:/usr/share/elasticsearch/config/certs
+      - etc:/etc/elastic
+  setup_certs:
+    command: bash bin/create-certs.sh
+    configs:
+      - mode: 0700
+        source: create-certs.sh
+        target: /usr/share/elasticsearch/bin/create-certs.sh
+    container_name: "setup_certs"
+    hostname: host.docker.internal
+    image: ${ES_IMAGE}
+    user: "0"
+    volumes:
+      - certs:/usr/share/elasticsearch/config/certs
+  setup_kibana_space:
+    configs:
+      - mode: 0700
+        source: set-kibana-space-settings.sh
+        target: /bin/set-kibana-space-settings.sh
+    container_name: setup_kibana_space
+    depends_on:
+      kibana:
+        condition: service_healthy
+      setup_kibana_user:
+        condition: service_completed_successfully
+    environment:
+      - ELASTIC_PASSWORD
+      - KIBANA_PORT
+    hostname: host.docker.internal
+    image: pnnlmiscscripts/curl-jq
+    command: bash bin/set-kibana-space-settings.sh
+    volumes:
+      - certs:/usr/share/elasticsearch/config/certs
+  setup_kibana_user:
+    configs:
+      - mode: 0700
+        source: set-kibana-system-user-password.sh
+        target: /bin/set-kibana-system-user-password.sh
+    container_name: "setup_kibana_user"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      - ELASTIC_PASSWORD
+      - ES_PORT
+      - KIBANA_PASSWORD
+    hostname: host.docker.internal
+    image: pnnlmiscscripts/curl-jq
+    command: bash bin/set-kibana-system-user-password.sh
+    volumes:
+      - certs:/usr/share/elasticsearch/config/certs

@@ -1,0 +1,33 @@
+name: elastic-apm-server-docker-compose
+configs:
+  apm-server.yml:
+    file: config/apm-server.yml
+services:
+  apmserver:
+    scale: 0
+    configs:
+      - source: apm-server.yml
+        target: /usr/share/apm-server/apm-server.yml
+    container_name: apmserver
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      setup_api_key:
+        condition: service_completed_successfully
+    deploy:
+      resources:
+        limits:
+          memory: 200M
+    environment:
+      - ELASTIC_APM_SERVER_PORT
+      - ELASTIC_PASSWORD
+      - ES_PORT
+    hostname: host.docker.internal
+    image: ${ELASTIC_APM_SERVER_IMAGE}
+    ports:
+      - "${ELASTIC_APM_SERVER_PORT}:${ELASTIC_APM_SERVER_PORT}"
+    restart: unless-stopped
+    user: 0:0
+    volumes:
+      - certs:/usr/share/apm-server/config/certs
+      - etc:/etc/elastic
