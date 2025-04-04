@@ -1,0 +1,74 @@
+name: elastic-profiling-docker-compose
+configs:
+  initialize_universal_profiling.sh:
+    file: scripts/initialize_universal_profiling.sh
+  pf-elastic-collector.yml:
+    file: config/pf-elastic-collector.yml
+services:
+  setup_universal_profiling:
+    configs:
+      - mode: 0700
+        source: initialize_universal_profiling.sh
+        target: /bin/initialize_universal_profiling.sh
+    container_name: setup_universal_profiling
+    depends_on:
+      kibana:
+        condition: service_healthy
+      setup_kibana_user:
+        condition: service_completed_successfully
+    environment:
+      - ELASTIC_PASSWORD
+      - KIBANA_PORT
+    hostname: host.docker.internal
+    image: pnnlmiscscripts/curl-jq
+    command: bash bin/initialize_universal_profiling.sh
+    volumes:
+      - certs:/usr/share/elasticsearch/config/certs
+  profiling-collector:
+    image: docker.elastic.co/observability/profiling-collector:8.17.0
+    container_name: profiling-collector
+    restart: unless-stopped
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      setup_api_key:
+        condition: service_completed_successfully
+    ports:
+      - "8260:8260"
+    volumes:
+      - ./config/pf-elastic-collector.yml:/pf-elastic-collector.yml:ro
+    command: ["-c", "/pf-elastic-collector.yml"]
+  linux-vm:
+    image: justincormack/nsenter1
+    container_name: linux-vm
+    privileged: true
+    pid: "host"
+    depends_on:
+      setup_universal_profiling:
+        condition: service_completed_successfully
+    stdin_open: true
+    tty: true
+    volumes:
+      - /etc/machine-id:/etc/machine-id:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /sys/kernel/debug:/sys/kernel/debug:ro
+    restart: unless-stopped
+    command: ["/bin/sh", "-c", "sleep infinity"]
+  profiling-agent:
+    image: docker.elastic.co/observability/profiling-agent:9.1.0-SNAPSHOT
+    container_name: profiling-host-agent
+    depends_on:
+      - linux-vm
+    privileged: true
+    pid: "host"
+    volumes:
+      - /etc/machine-id:/etc/machine-id:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /sys/kernel/debug:/sys/kernel/debug:ro
+    restart: unless-stopped
+    command: >
+      /root/pf-host-agent 
+      -project-id=1 
+      -secret-token=caue
+      -collection-agent=profiling-collector:8260 
+      -disable-tls
