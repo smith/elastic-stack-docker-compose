@@ -288,9 +288,14 @@ services:
       - certs:/usr/share/elasticsearch/config/certs
   profiling-collector:
     scale: 0
-    image: docker.elastic.co/observability/profiling-collector:8.17.0
+    image: ${PROFILING_COLLECTOR_IMAGE}
     container_name: profiling-collector
     restart: unless-stopped
+    environment:
+      - PROFILING_COLLECTOR_PORT
+      - PROFILING_COLLECTOR_SECRET
+      - ELASTIC_PASSWORD
+      - ES_PORT
     depends_on:
       elasticsearch:
         condition: service_healthy
@@ -299,7 +304,7 @@ services:
       setup_universal_profiling:
         condition: service_completed_successfully
     ports:
-      - "8260:8260"
+      - "${PROFILING_COLLECTOR_PORT}:${PROFILING_COLLECTOR_PORT}"
     volumes:
       - ./config/pf-elastic-collector.yml:/pf-elastic-collector.yml:ro
     command: ["-c", "/pf-elastic-collector.yml"]
@@ -322,7 +327,7 @@ services:
     command: ["/bin/sh", "-c", "sleep infinity"]
   profiling-agent:
     scale: 0
-    image: docker.elastic.co/observability/profiling-agent:9.1.0-SNAPSHOT
+    image: ${PROFILING_AGENT_IMAGE}
     container_name: profiling-host-agent
     depends_on:
       - linux-vm
@@ -336,8 +341,8 @@ services:
     command: >
       /root/pf-host-agent 
       -project-id=1 
-      -secret-token=caue
-      -collection-agent=profiling-collector:8260 
+      -secret-token=${PROFILING_COLLECTOR_SECRET}
+      -collection-agent=profiling-collector:${PROFILING_COLLECTOR_PORT} 
       -disable-tls
 volumes:
   bin:

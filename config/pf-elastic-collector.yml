@@ -1,6 +1,6 @@
 pf-elastic-collector:
   # Defines the host and port the server is listening on.
-  host: "0.0.0.0:8260"
+  host: "0.0.0.0:${PROFILING_COLLECTOR_PORT}"
 
   # Verbose log output option.
   verbose: true
@@ -22,7 +22,7 @@ pf-elastic-collector:
   # Agent authorization configuration. If no methods are defined, all requests will be allowed.
   auth:
     # Define a shared secret token for authorizing agents.
-    secret_token: "caue"
+    secret_token: "${PROFILING_COLLECTOR_SECRET}"
 
   # Controls storage of Universal Profiling agent metrics/metadata to the customer's cluster and to a
   # cluster controlled by Elastic. By default, the full set of metrics and metadata is written to
@@ -76,7 +76,7 @@ output:
     # Scheme and port can be left out and will be set to the default (`http` and `9200`).
     # In case you specify an additional path, the scheme is required: `http://localhost:9200/path`.
     # IPv6 addresses should always be defined as: `https://[2001:db8::1]:9200`.
-    hosts: ["https://elastic:changeme@elasticsearch:9200"]
+    hosts: ["https://elasticsearch:${ES_PORT}"]
 
     # Set gzip compression level.
     #compression_level: 0
@@ -86,8 +86,8 @@ output:
 
     # Authentication credentials - either API key or username/password.
     #api_key: "id:api_key"
-    # username: "elastic"
-    # password: "password"
+    username: "elastic"
+    password: "${ELASTIC_PASSWORD}"
 
     # Optional HTTP Path.
     #path: "/elasticsearch"
