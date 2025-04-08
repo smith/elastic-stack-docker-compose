@@ -224,3 +224,6 @@ xpack.security.encryptionKey: 944c9b01e335cf7eebcda4413797f494
 # Other xpack settings
 xpack.profiling.enabled: true
 xpack.screenshotting.browser.chromium.disableSandbox: true
+
+# Profiling
+xpack.apm.featureFlags.profilingIntegrationAvailable: true
