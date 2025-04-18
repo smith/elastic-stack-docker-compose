@@ -128,23 +128,17 @@ service:
     #   exporters:
     #     - otlp/apmserver
     #     - debug
+    # Uncomment this to enable traces without the elastictraceprocessor.
+    # traces/fromsdk:
+    #   receivers:
+    #     - otlp/fromsdk:
+    #   processors: []
+    #   exporters:
+    #     - elasticsearch/otel
+    #     - debug
   telemetry:
     logs:
       disable_stacktrace: true
       encoding: json
       output_paths: ["stdout", "stderr", "otelcol.log"]
       level: WARN
-    metrics:
-      readers:
-        - periodic:
-            exporter:
-              otlp:
-                protocol: http/protobuf
-                endpoint: otelcol:${env:OTEL_COLLECTOR_PORT_HTTP}
-    traces:
-      processors:
-        - simple:
-            exporter:
-              otlp:
-                protocol: http/protobuf
-                endpoint: otelcol:${env:OTEL_COLLECTOR_PORT_HTTP}
