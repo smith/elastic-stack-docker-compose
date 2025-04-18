@@ -49,6 +49,14 @@ service:
 
 `docker compose up` to start the demo. It will send all data from the demo's collector over OTLP to ours.
 
+#### Elastic Universal Profiling
+
+Universal Profiling services are not started by default. Use the [profiles](https://docs.docker.com/compose/how-tos/profiles/#start-specific-profiles) to start them:
+
+```
+docker compose --profile profiling up
+```
+
 #### Kibana TLS
 
 Kibana is configured for HTTP2 by default. The HTTPS connection will not be trusted unless you configure your operating system to trust the certificate.
@@ -79,7 +87,11 @@ If you don't need a particular service (let's say you already have Kibana runnin
 
 [Elastic APM Server](https://www.elastic.co/guide/en/observability/current/apm-getting-started-apm-server.html#apm-setup-apm-server-binary) is included for testing with legacy scenarios.
 
-By default the `apmserver` section in [compose.yml](./compose.yaml) contains `scale: 0`. Increase this number in the compose.yaml or run `docker compose scale apmserver=1`.
+To start the APM server run:
+
+```
+docker compose --profile apm up
+```
 
 To configure the OpenTelemetry collector to send data to the APM Server, uncomment the `traces/fromsdk` pipeline under the `# Send traces to APM server` comment.
 
@@ -119,17 +131,3 @@ This compose.yaml is based on these sources:
 ## Why doesn't this use Kubernetes?
 
 If you need Kubernetes, you should use it. See the [Elastic Kubernetes documentation](https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-deploy-elasticsearch.html). This is a simpler environment meant to run on a single computer.
-
-## Profiling
-
-Universal Profiling services are not started by default. To **start** them run:
-
-```
-./scripts/scale_profiling_services.sh 1
-```
-
-To **stop** profiling services run:
-
-```
-./scripts/scale_profiling_services.sh 0
-```

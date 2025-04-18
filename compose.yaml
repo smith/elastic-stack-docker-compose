@@ -45,7 +45,7 @@ configs:
     file: config/pf-elastic-collector.yml
 services:
   apmserver:
-    scale: 0
+    profiles: [apm]
     configs:
       - source: apm-server.yml
         target: /usr/share/apm-server/apm-server.yml
@@ -287,7 +287,7 @@ services:
     volumes:
       - certs:/usr/share/elasticsearch/config/certs
   profiling-collector:
-    scale: 0
+    profiles: [profiling]
     image: ${PROFILING_COLLECTOR_IMAGE}
     container_name: profiling-collector
     restart: unless-stopped
@@ -309,7 +309,7 @@ services:
       - ./config/pf-elastic-collector.yml:/pf-elastic-collector.yml:ro
     command: ["-c", "/pf-elastic-collector.yml"]
   linux-vm:
-    scale: 0
+    profiles: [profiling]
     image: justincormack/nsenter1
     container_name: linux-vm
     privileged: true
@@ -326,7 +326,7 @@ services:
     restart: unless-stopped
     command: ["/bin/sh", "-c", "sleep infinity"]
   profiling-agent:
-    scale: 0
+    profiles: [profiling]
     image: ${PROFILING_AGENT_IMAGE}
     container_name: profiling-host-agent
     depends_on:
