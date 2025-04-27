@@ -1,3 +1,4 @@
+#!/bin/bash
 set -eo pipefail
 if [ -z "$ELASTIC_PASSWORD" ]; then
     echo "Set the ELASTIC_PASSWORD environment variable in the .env file" >&2;
