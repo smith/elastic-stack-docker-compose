@@ -37,8 +37,6 @@ configs:
     file: config/otelcol/otelcol.yml
   set-kibana-system-user-password.sh:
     file: scripts/set-kibana-system-user-password.sh
-  set-kibana-space-settings.sh:
-    file: scripts/set-kibana-space-settings.sh
   initialize-universal-profiling.sh:
     file: scripts/initialize-streams.sh
   initialize-streams.sh:
@@ -229,25 +227,6 @@ services:
     hostname: host.docker.internal
     image: ${ES_IMAGE}
     user: "0"
-    volumes:
-      - certs:/usr/share/elasticsearch/config/certs
-  setup_kibana_space:
-    configs:
-      - mode: 0700
-        source: set-kibana-space-settings.sh
-        target: /bin/set-kibana-space-settings.sh
-    container_name: setup_kibana_space
-    depends_on:
-      kibana:
-        condition: service_healthy
-      setup_kibana_user:
-        condition: service_completed_successfully
-    environment:
-      - ELASTIC_PASSWORD
-      - KIBANA_PORT
-    hostname: host.docker.internal
-    image: pnnlmiscscripts/curl-jq
-    command: bash bin/set-kibana-space-settings.sh
     volumes:
       - certs:/usr/share/elasticsearch/config/certs
   setup_kibana_user:
