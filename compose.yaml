@@ -31,8 +31,6 @@ configs:
     file: config/kibana.yml
   node.options:
     file: config/node.options
-  logs_metrics_traces.yml:
-    file: config/otelcol/logs_metrics_traces.yml
   otelcol.yml:
     file: config/otelcol/otelcol.yml
   set-kibana-system-user-password.sh:
@@ -151,8 +149,6 @@ services:
   otelcol:
     command: --config https://raw.githubusercontent.com/elastic/elastic-agent/refs/heads/main/internal/pkg/otel/samples/linux/logs_metrics_traces.yml --config /etc/otelcol/config.yml  --config /etc/elastic/api_key.yml
     configs:
-      - source: logs_metrics_traces.yml
-        target: /etc/otelcol/logs_metrics_traces.yml
       - source: otelcol.yml
         target: /etc/otelcol/config.yml
     container_name: "otelcol"
