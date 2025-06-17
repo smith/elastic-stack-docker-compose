@@ -87,6 +87,7 @@ services:
       - ELASTIC_PASSWORD
       - cluster.name="${ES_CLUSTER_NAME}"
       - xpack.license.self_generated.type="${ES_LICENSE}"
+      - ES_JAVA_OPTS=-Xms${ES_LOCAL_HEAP_INIT} -Xmx${ES_LOCAL_HEAP_MAX}
     healthcheck:
       interval: 2s
       retries: 120
