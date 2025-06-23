@@ -132,7 +132,7 @@ service:
     # Uncomment this to enable traces without the elastictraceprocessor.
     # traces/fromsdk:
     #   receivers:
-    #     - otlp/fromsdk:
+    #     - otlp/fromsdk
     #   processors: []
     #   exporters:
     #     - elasticsearch/otel
