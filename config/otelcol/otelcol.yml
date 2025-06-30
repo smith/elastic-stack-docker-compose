@@ -135,6 +135,7 @@ service:
     #     - otlp/fromsdk
     #   processors: []
     #   exporters:
+    #     - elasticapm
     #     - elasticsearch/otel
     #     - debug
   telemetry:
