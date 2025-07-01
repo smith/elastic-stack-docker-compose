@@ -3,6 +3,7 @@
 # This is extra configuration meant to be loaded _after_ the copy of https://github.com/elastic/elastic-agent/tree/main/internal/pkg/otel/samples/linux/logs_metrics_traces.yml in this repository.
 # [Receivers](https://github.com/open-telemetry/opentelemetry-collector/tree/main/receiver#readme)
 receivers:
+  docker_stats: {}
   filelog/eslogs:
     include:
       - /usr/share/elastic-agent/logs/es/*
@@ -45,9 +46,9 @@ receivers:
     #     ca_file: /usr/share/elastic-agent/config/certs/ca/ca.crt
     #     cert_file: /usr/share/elastic-agent/config/certs/elasticsearch/elasticsearch.crt
     #     key_file: /usr/share/elastic-agent/config/certs/elasticsearch/elasticsearch.key
-  hostmetrics/system:
-    collection_interval: 5s # default is 30; this is faster
-    root_path: /
+  # hostmetrics/system:
+  #   collection_interval: 5s # default is 30; this is faster
+  #   root_path: /
   nop: {}
   # [OTLP Receiver](https://github.com/open-telemetry/opentelemetry-collector/blob/main/receiver/otlpreceiver/README.md)
   otlp/fromsdk:
@@ -68,13 +69,11 @@ exporters:
   debug:
     verbosity: basic
   # [Elasticsearch exporter](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/exporter/elasticsearchexporter/README.md)
-  elasticsearch/ecs:
-    sending_queue:
-      enabled: true
-    tls:
-      ca_file: /usr/share/elastic-agent/config/certs/ca/ca.crt
-      insecure_skip_verify: true
   elasticsearch/otel:
+    endpoints: [ "${env:ELASTIC_ENDPOINT}" ]
+    api_key: ${env:ELASTIC_API_KEY}
+    mapping:
+      mode: otel
     sending_queue:
       enabled: true
     tls:
@@ -85,59 +84,12 @@ exporters:
     tls:
       insecure: true
 # [Service Section](https://opentelemetry.io/docs/collector/configuration/#service)
+connectors: {}
 service:
   pipelines:
-    logs/eslogs:
-      receivers:
-        - filelog/eslogs
-      processors:
-        - resourcedetection
-      exporters:
-        - elasticsearch/otel
-        - debug
-    logs/kibanalogs:
-      receivers:
-        - filelog/kibanalogs
-      processors:
-        - resourcedetection
-      exporters:
-        - elasticsearch/otel
-        - debug
-    logs/otelcollogs:
-      receivers:
-        - filelog/otelcollogs
-      processors:
-        - resourcedetection
-      exporters:
-        - elasticsearch/otel
-        - debug
-    logs/platformlogs:
-      receivers: [nop]
-    metrics/httpcheck:
-      receivers:
-        - httpcheck
-      processors:
-        - resourcedetection
-      exporters:
-        - elasticsearch/otel
-        - debug
-    # Send traces to APM server
-    # traces/fromsdk:
-    #   receivers:
-    #     - otlp/fromsdk
-    #   processors: []
-    #   exporters:
-    #     - otlp/apmserver
-    #     - debug
-    # Uncomment this to enable traces without the elastictraceprocessor.
-    # traces/fromsdk:
-    #   receivers:
-    #     - otlp/fromsdk
-    #   processors: []
-    #   exporters:
-    #     - elasticapm
-    #     - elasticsearch/otel
-    #     - debug
+    metrics:
+      receivers: [docker_stats]
+      exporters: [elasticsearch/otel, debug]
   telemetry:
     logs:
       disable_stacktrace: true

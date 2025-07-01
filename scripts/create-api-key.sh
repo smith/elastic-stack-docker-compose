@@ -12,8 +12,7 @@ jq --raw-output .encoded | \
 (
 cat <<EOF
 exporters:
-  elasticsearch/ecs: &api_key
+  elasticsearch/otel:
     api_key: $(cat)
-  elasticsearch/otel: *api_key
 EOF
 ) > /etc/elastic/api_key.yml

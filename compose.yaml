@@ -147,7 +147,8 @@ services:
       - kibana_data:/usr/share/kibana/data
       - kibana_logs:/usr/share/kibana/logs
   otelcol:
-    command: --config "$EDOT_COLLECTOR_CONFIG_URL" --config /etc/otelcol/config.yml  --config /etc/elastic/api_key.yml
+#    command: --config "$EDOT_COLLECTOR_CONFIG_URL" --config /etc/otelcol/config.yml  --config /etc/elastic/api_key.yml
+    command: --config /etc/otelcol/config.yml  --config /etc/elastic/api_key.yml
     configs:
       - source: otelcol.yml
         target: /etc/otelcol/config.yml
