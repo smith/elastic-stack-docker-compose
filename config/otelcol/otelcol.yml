@@ -50,7 +50,7 @@ receivers:
     root_path: /
   nop: {}
   # [OTLP Receiver](https://github.com/open-telemetry/opentelemetry-collector/blob/main/receiver/otlpreceiver/README.md)
-  otlp/fromsdk:
+  otlp:
     protocols:
       grpc:
         endpoint: otelcol:${env:OTEL_COLLECTOR_PORT_GRPC}
@@ -122,17 +122,17 @@ service:
         - elasticsearch/otel
         - debug
     # Send traces to APM server
-    # traces/fromsdk:
+    # traces:
     #   receivers:
-    #     - otlp/fromsdk
+    #     - otlp
     #   processors: []
     #   exporters:
     #     - otlp/apmserver
     #     - debug
     # Uncomment this to enable traces without the elastictraceprocessor.
-    # traces/fromsdk:
+    # traces:
     #   receivers:
-    #     - otlp/fromsdk
+    #     - otlp
     #   processors: []
     #   exporters:
     #     - elasticapm
