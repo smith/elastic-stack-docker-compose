@@ -68,12 +68,6 @@ exporters:
   debug:
     verbosity: basic
   # [Elasticsearch exporter](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/exporter/elasticsearchexporter/README.md)
-  elasticsearch/ecs:
-    sending_queue:
-      enabled: true
-    tls:
-      ca_file: /usr/share/elastic-agent/config/certs/ca/ca.crt
-      insecure_skip_verify: true
   elasticsearch/otel:
     sending_queue:
       enabled: true
