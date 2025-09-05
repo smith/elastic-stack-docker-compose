@@ -205,16 +205,20 @@ logging.loggers:
 # xpack.fleet.internal.registry.kibanaVersionCheckEnabled: false
 
 discover.experimental.enabledProfiles:
-  - observability-traces-data-source-profile
-  - observability-traces-transaction-document-profile
-  - observability-traces-span-document-profile
+  - observability-metrics-data-source-profile
 
 # Advanced Settings overrides
-uiSettings.overrides.defaultRoute: /app/discover#/?_g=()&_a=(dataSource:(type:esql),filters:!(),query:(esql:'FROM%20traces-*'))
+uiSettings.overrides.defaultRoute: /app/discover#/?_g=()&_a=(dataSource:(type:esql),filters:!(),query:(esql:'TS%20metrics*'))
 uiSettings.overrides.observability:enableInspectEsQueries: true
 uiSettings.overrides.observability:entityCentricExperience: false
 uiSettings.overrides.observability:newLogsOverview: true
 uiSettings.overrides.theme:darkMode: system
+uiSettings.overrides.showSpaceSolutionTour: false
+
+# Feature flag overrides
+feature_flags.overrides.discover.tabsEnabled: true
+
+metricsExperience.enabled: true
 
 # Encryption settings
 xpack.encryptedSavedObjects.encryptionKey: 0c4fb61f013d771f43d321e5b2484f4d
