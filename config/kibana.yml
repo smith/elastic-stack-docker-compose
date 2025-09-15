@@ -208,14 +208,17 @@ discover.experimental.enabledProfiles:
   - observability-metrics-data-source-profile
 
 # Advanced Settings overrides
-uiSettings.overrides.defaultRoute: /app/discover#/?_g=()&_a=(dataSource:(type:esql),filters:!(),query:(esql:'TS%20metrics*'))
-uiSettings.overrides.observability:enableInspectEsQueries: true
-uiSettings.overrides.theme:darkMode: system
-uiSettings.overrides.showSpaceSolutionTour: false
+uiSettings.overrides:
+  defaultRoute: /app/discover#/?_g=()&_a=(dataSource:(type:esql),filters:!(),query:(esql:'TS%20metrics*'))
+  observability:enableInspectEsQueries: true
+  showSpaceSolutionTour: false
+  theme:darkMode: system
 
 # Feature flag overrides
-feature_flags.overrides.discover.tabsEnabled: true
-feature_flags.overrides.metricsExperienceEnabled: true
+feature_flags.overrides:
+  core.chrome.projectSideNav: v2
+  discover.tabsEnabled: true
+  metricsExperienceEnabled: true
 
 # Encryption settings
 xpack.encryptedSavedObjects.encryptionKey: 0c4fb61f013d771f43d321e5b2484f4d
