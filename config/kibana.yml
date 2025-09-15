@@ -210,15 +210,12 @@ discover.experimental.enabledProfiles:
 # Advanced Settings overrides
 uiSettings.overrides.defaultRoute: /app/discover#/?_g=()&_a=(dataSource:(type:esql),filters:!(),query:(esql:'TS%20metrics*'))
 uiSettings.overrides.observability:enableInspectEsQueries: true
-uiSettings.overrides.observability:entityCentricExperience: false
-uiSettings.overrides.observability:newLogsOverview: true
 uiSettings.overrides.theme:darkMode: system
 uiSettings.overrides.showSpaceSolutionTour: false
 
 # Feature flag overrides
 feature_flags.overrides.discover.tabsEnabled: true
-
-metricsExperience.enabled: true
+feature_flags.overrides.metricsExperienceEnabled: true
 
 # Encryption settings
 xpack.encryptedSavedObjects.encryptionKey: 0c4fb61f013d771f43d321e5b2484f4d
