@@ -48,6 +48,20 @@ receivers:
   hostmetrics/system:
     collection_interval: 5s # default is 30; this is faster
     root_path: /
+    scrapers:
+      process:
+        mute_process_exe_error: true
+        mute_process_io_error: true
+        mute_process_user_error: true
+        metrics:
+          process.threads:
+            enabled: true
+          process.open_file_descriptors:
+            enabled: true
+          process.memory.utilization:
+            enabled: true
+          process.disk.operations:
+            enabled: true
   nop: {}
   # [OTLP Receiver](https://github.com/open-telemetry/opentelemetry-collector/blob/main/receiver/otlpreceiver/README.md)
   otlp/fromsdk:
