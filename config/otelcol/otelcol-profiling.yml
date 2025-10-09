@@ -1,0 +1,28 @@
+# [OpenTelemetry collector configuration](https://opentelemetry.io/docs/collector/configuration/)
+## For ebpf profiling
+receivers:
+  profiling:
+processors: {}
+# [Exporters](https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter#readme)
+exporters:
+  # [Debug exporter](https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/debugexporter/README.md)
+  debug:
+    verbosity: detailed
+  otlp:
+    endpoint: otelcol:${env:OTEL_COLLECTOR_PORT_GRPC}
+    tls:
+      insecure: true
+# [Service Section](https://opentelemetry.io/docs/collector/configuration/#service)
+service:
+  pipelines:
+    profiles:
+      receivers: [profiling]
+      processors: []
+      exporters:
+        - otlp
+        - debug
+  telemetry:
+    logs:
+      disable_stacktrace: true
+      output_paths: ["stdout", "stderr", "otelcol.log"]
+      level: DEBUG
