@@ -33,6 +33,8 @@ configs:
     file: config/node.options
   otelcol.yml:
     file: config/otelcol/otelcol.yml
+  otelcol-profiling.yml:
+    file: config/otelcol/otelcol-profiling.yml
   set-kibana-system-user-password.sh:
     file: scripts/set-kibana-system-user-password.sh
   initialize-universal-profiling.sh:
@@ -147,7 +149,7 @@ services:
       - kibana_data:/usr/share/kibana/data
       - kibana_logs:/usr/share/kibana/logs
   otelcol:
-    command: --config "$EDOT_COLLECTOR_CONFIG_URL" --config /etc/otelcol/config.yml  --config /etc/elastic/api_key.yml
+    command: --config "$EDOT_COLLECTOR_CONFIG_URL" --config /etc/otelcol/config.yml  --config /etc/elastic/api_key.yml --feature-gates=service.profilesSupport
     configs:
       - source: otelcol.yml
         target: /etc/otelcol/config.yml
@@ -193,6 +195,29 @@ services:
       - etc:/etc/elastic
       - kibana_logs:/usr/share/elastic-agent/logs/kibana
       - otel_registry:/usr/share/elastic-agent/otel_registry
+  otelcol-profiling:
+    command: --config /etc/otelcol/config.yml --feature-gates=service.profilesSupport
+    configs:
+      - source: otelcol-profiling.yml
+        target: /etc/otelcol/config.yml
+    container_name: "otelcol-profiling"
+    # depends_on:
+    #   otelcol:
+    #     condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 200M
+    environment:
+      - OTEL_COLLECTOR_PORT_GRPC
+    hostname: host.docker.internal
+    image: ${PROFILING_COLLECTOR_CONTRIB_IMAGE}
+    privileged: true
+    volumes:
+      - /etc/machine-id:/etc/machine-id:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /sys/kernel/debug:/sys/kernel/debug:ro
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
   setup_api_key:
     command: bash /usr/share/elasticsearch/bin/create-api-key.sh
     configs:

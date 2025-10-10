@@ -80,7 +80,7 @@ processors: {}
 exporters:
   # [Debug exporter](https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/debugexporter/README.md)
   debug:
-    verbosity: basic
+    verbosity: detailed
   # [Elasticsearch exporter](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/exporter/elasticsearchexporter/README.md)
   elasticsearch/otel:
     sending_queue:
@@ -95,40 +95,44 @@ exporters:
 # [Service Section](https://opentelemetry.io/docs/collector/configuration/#service)
 service:
   pipelines:
-    logs/eslogs:
-      receivers:
-        - filelog/eslogs
-      processors:
-        - resourcedetection
-      exporters:
-        - elasticsearch/otel
-        - debug
-    logs/kibanalogs:
-      receivers:
-        - filelog/kibanalogs
-      processors:
-        - resourcedetection
-      exporters:
-        - elasticsearch/otel
-        - debug
-    logs/otelcollogs:
-      receivers:
-        - filelog/otelcollogs
-      processors:
-        - resourcedetection
-      exporters:
-        - elasticsearch/otel
-        - debug
-    logs/platformlogs:
-      receivers: [nop]
-    metrics/httpcheck:
-      receivers:
-        - httpcheck
-      processors:
-        - resourcedetection
-      exporters:
-        - elasticsearch/otel
-        - debug
+    profiles:
+      receivers: [otlp/fromsdk]
+      exporters: [debug,  elasticsearch/otel]
+    # logs/eslogs:
+    #   receivers:
+    #     - filelog/eslogs
+    #   processors:
+    #     - resourcedetection
+    #   exporters:
+    #     - elasticsearch/otel
+    #     - debug
+    # logs/kibanalogs:
+    #   receivers:
+    #     - filelog/kibanalogs
+    #   processors:
+    #     - resourcedetection
+    #   exporters:
+    #     - elasticsearch/otel
+    #     - debug
+    # logs/otelcollogs:
+    #   receivers:
+    #     - filelog/otelcollogs
+    #   processors:
+    #     - resourcedetection
+    #   exporters:
+    #     - elasticsearch/otel
+    #     - debug
+    # logs/platformlogs:
+    #   receivers: [nop]
+    # metrics/httpcheck:
+      # receivers:
+      #   - httpcheck
+      # processors:
+      #   - resourcedetection
+      # exporters:
+      #   - elasticsearch/otel
+      #   - debug
+
     # Send traces to APM server
     # traces/fromsdk:
     #   receivers:
@@ -149,6 +153,6 @@ service:
   telemetry:
     logs:
       disable_stacktrace: true
-      encoding: json
+      # encoding: json
       output_paths: ["stdout", "stderr", "otelcol.log"]
-      level: WARN
+      level: DEBUG
