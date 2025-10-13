@@ -214,6 +214,7 @@ uiSettings.overrides:
   observability:enableInspectEsQueries: true
   showSpaceSolutionTour: false
   theme:darkMode: system
+  workflows:ui:enabled: true
 
 # Feature flag overrides
 feature_flags.overrides:

@@ -36,9 +36,7 @@ configs:
   set-kibana-system-user-password.sh:
     file: scripts/set-kibana-system-user-password.sh
   initialize-universal-profiling.sh:
-    file: scripts/initialize-streams.sh
-  initialize-streams.sh:
-    file: scripts/initialize-streams.sh
+    file: scripts/initialize-universal-profiling.sh
   pf-elastic-collector.yml:
     file: config/pf-elastic-collector.yml
 services:
@@ -242,25 +240,6 @@ services:
     hostname: host.docker.internal
     image: pnnlmiscscripts/curl-jq
     command: bash bin/set-kibana-system-user-password.sh
-    volumes:
-      - certs:/usr/share/elasticsearch/config/certs
-  setup_streams:
-    configs:
-      - mode: 0700
-        source: initialize-streams.sh
-        target: /bin/initialize-streams.sh
-    container_name: setup_streams
-    depends_on:
-      kibana:
-        condition: service_healthy
-      setup_kibana_user:
-        condition: service_completed_successfully
-    environment:
-      - ELASTIC_PASSWORD
-      - KIBANA_PORT
-    hostname: host.docker.internal
-    image: pnnlmiscscripts/curl-jq
-    command: bash bin/initialize-streams.sh
     volumes:
       - certs:/usr/share/elasticsearch/config/certs
   setup_universal_profiling:
