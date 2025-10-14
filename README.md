@@ -30,22 +30,7 @@ Runs:
 
 #### OpenTelemetry Demo
 
-To send data from the [OpenTelemetry Demo](https://opentelemetry.io/ecosystem/demo/) to this cluster, check out a copy of the demo, and update [src/otel-collector/otelcol-config-extras.yml](https://github.com/open-telemetry/opentelemetry-demo/blob/main/src/otel-collector/otelcol-config-extras.yml]):
-
-```yaml
-exporters:
-  otlp:
-    endpoint: "http://host.docker.internal:4317"
-
-service:
-  pipelines:
-    metrics:
-      exporters: [otlp, debug]
-    logs:
-      exporters: [otlp, debug]
-```
-
-`docker compose up` to start the demo. It will send all data from the demo's collector over OTLP to ours.
+To send data from the [OpenTelemetry Demo](https://opentelemetry.io/ecosystem/demo/) to this cluster, check out a copy of the demo and run `env OTEL_COLLECTOR_HOST=host.docker.internal docker compose up -d` to start the demo. It will send all data from the demo to our collector instead of the collector included in the demo.
 
 #### Elastic Universal Profiling
 
