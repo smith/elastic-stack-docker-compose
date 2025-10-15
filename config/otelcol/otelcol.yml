@@ -3,6 +3,7 @@
 # This is extra configuration meant to be loaded _after_ the copy of https://github.com/elastic/elastic-agent/tree/main/internal/pkg/otel/samples/linux/logs_metrics_traces.yml in this repository.
 # [Receivers](https://github.com/open-telemetry/opentelemetry-collector/tree/main/receiver#readme)
 receivers:
+  docker_stats:
   filelog/eslogs:
     include:
       - /usr/share/elastic-agent/logs/es/*
@@ -121,6 +122,14 @@ service:
         - debug
     logs/platformlogs:
       receivers: [nop]
+    metrics/docker_stats:
+      receivers:
+        - docker_stats
+      processors:
+        - resourcedetection
+      exporters:
+        - elasticsearch/otel
+        - debug
     metrics/httpcheck:
       receivers:
         - httpcheck
