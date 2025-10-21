@@ -2,7 +2,7 @@
 ## For ebpf profiling
 receivers:
   profiling:
-    SamplesPerSecond: 19
+    samples_per_second: 19
 processors: {}
 # [Exporters](https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter#readme)
 exporters:
