@@ -212,6 +212,8 @@ uiSettings.overrides:
   defaultRoute: /app/discover#/?_g=()&_a=(dataSource:(type:esql),filters:!(),query:(esql:'TS%20metrics*'))
   hideAnnouncements: true
   observability:enableInspectEsQueries: true
+  observability:streamsEnableAttachments: true
+  observability:streamsEnableContentPacks: true
   showSpaceSolutionTour: false
   theme:darkMode: system
   workflows:ui:enabled: true
