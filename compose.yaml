@@ -9,7 +9,7 @@ configs:
           "standalone_agent": { 
             "cluster": ["monitor"], 
             "indices": [{
-              "names": ["logs-*-*", "metrics-*-*", "traces-*-*"], 
+              "names": ["logs*", "metrics*", "traces*"], 
               "privileges": ["auto_configure", "create_doc"], 
               "allow_restricted_indices": false }],
             "applications": [],
