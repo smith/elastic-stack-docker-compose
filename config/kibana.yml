@@ -220,9 +220,7 @@ uiSettings.overrides:
 
 # Feature flag overrides
 feature_flags.overrides:
-  core.chrome.projectSideNav: v2
-  discover.tabsEnabled: true
-  metricsExperienceEnabled: true
+  discover.cascadeLayoutEnabled: true
 
 # Encryption settings
 xpack.encryptedSavedObjects.encryptionKey: 0c4fb61f013d771f43d321e5b2484f4d
