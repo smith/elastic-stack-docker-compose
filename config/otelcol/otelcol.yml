@@ -139,6 +139,13 @@ service:
       exporters:
         - elasticsearch/otel
         - debug
+    profiles/fromsdk:
+      receivers:
+        - otlp/fromsdk
+      processors: []
+      exporters:
+        - elasticsearch/otel
+        - debug
     # Send traces to APM server
     # traces/fromsdk:
     #   receivers:
