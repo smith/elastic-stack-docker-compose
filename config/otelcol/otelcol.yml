@@ -75,6 +75,21 @@ receivers:
             - "http://*"
             - "https://*"
         endpoint: otelcol:${env:OTEL_COLLECTOR_PORT_HTTP}
+# [Extensions](https://opentelemetry.io/docs/collector/configuration/#extensions)
+extensions:
+  # [Elastic APM Central Configuration extension](https://github.com/elastic/opentelemetry-collector-components/tree/main/extension/apmconfigextension)
+  apmconfig:
+    source:
+      elasticsearch:
+        endpoint: https://elastic:${env:ELASTIC_PASSWORD}@elasticsearch:${env:ES_PORT}
+        tls:
+          ca_file: /usr/share/elastic-agent/config/certs/ca/ca.crt
+          insecure_skip_verify: true
+        cache_duration: 10s
+    opamp:
+      protocols:
+        http:
+          endpoint: 0.0.0.0:${env:OPAMP_PORT}
 # [Processors](https://github.com/open-telemetry/opentelemetry-collector/tree/main/processor#readme)
 processors: {}
 # [Exporters](https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter#readme)
@@ -95,6 +110,7 @@ exporters:
       insecure: true
 # [Service Section](https://opentelemetry.io/docs/collector/configuration/#service)
 service:
+  extensions: [file_storage, apmconfig]
   pipelines:
     logs/eslogs:
       receivers:
