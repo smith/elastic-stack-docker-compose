@@ -9,9 +9,9 @@ if [ -f "$OUTPUT_FILE" ]; then
 fi
 
 # Generate three 32-character hex keys
-KEY1=$(cat /dev/urandom | tr -dc 'a-f0-9' | head -c 32)
-KEY2=$(cat /dev/urandom | tr -dc 'a-f0-9' | head -c 32)
-KEY3=$(cat /dev/urandom | tr -dc 'a-f0-9' | head -c 32)
+KEY1=$(dd if=/dev/urandom bs=16 count=1 2>/dev/null | xxd -p)
+KEY2=$(dd if=/dev/urandom bs=16 count=1 2>/dev/null | xxd -p)
+KEY3=$(dd if=/dev/urandom bs=16 count=1 2>/dev/null | xxd -p)
 
 cat > "$OUTPUT_FILE" <<EOF
 xpack.encryptedSavedObjects.encryptionKey: ${KEY1}
