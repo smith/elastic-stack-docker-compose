@@ -25,6 +25,10 @@ configs:
     file: scripts/create-api-key.sh
   create-certs.sh:
     file: scripts/create-certs.sh
+  import-saved-objects.sh:
+    file: scripts/import-saved-objects.sh
+  kibana-saved-objects.ndjson:
+    file: config/kibana-saved-objects.ndjson
   elasticsearch.yml:
     file: config/elasticsearch.yml
   kibana.yml:
@@ -243,6 +247,27 @@ services:
     command: bash bin/set-kibana-system-user-password.sh
     volumes:
       - certs:/usr/share/elasticsearch/config/certs
+  setup_saved_objects:
+    command: bash /bin/import-saved-objects.sh
+    configs:
+      - source: kibana-saved-objects.ndjson
+        target: /etc/elastic/kibana-saved-objects.ndjson
+      - mode: 0700
+        source: import-saved-objects.sh
+        target: /bin/import-saved-objects.sh
+    container_name: "setup_saved_objects"
+    depends_on:
+      kibana:
+        condition: service_healthy
+    environment:
+      - ELASTIC_PASSWORD
+      - KIBANA_PORT
+    hostname: host.docker.internal
+    image: pnnlmiscscripts/curl-jq
+    user: "0"
+    volumes:
+      - certs:/usr/share/elasticsearch/config/certs
+      - etc:/etc/elastic
   setup_universal_profiling:
     scale: 0
     configs:
