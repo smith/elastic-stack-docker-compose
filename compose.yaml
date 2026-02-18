@@ -263,6 +263,25 @@ services:
     command: bash bin/initialize-universal-profiling.sh
     volumes:
       - certs:/usr/share/elasticsearch/config/certs
+  autoops:
+    profiles: [autoops]
+    container_name: "autoops"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      - AUTOOPS_OTEL_URL
+      - AUTOOPS_TOKEN
+      - AUTOOPS_ES_URL
+      - ELASTIC_CLOUD_CONNECTED_MODE_API_KEY
+      - AUTOOPS_ES_USERNAME
+      - AUTOOPS_ES_PASSWORD
+      - AUTOOPS_TEMP_RESOURCE_ID
+    hostname: host.docker.internal
+    image: ${AUTOOPS_IMAGE}
+    restart: on-failure
+    volumes:
+      - certs:/usr/share/elastic-agent/config/certs
   profiling-collector:
     profiles: [profiling]
     image: ${PROFILING_COLLECTOR_IMAGE}
