@@ -222,10 +222,8 @@ uiSettings.overrides:
 feature_flags.overrides:
   discover.cascadeLayoutEnabled: true
 
-# Encryption settings
-xpack.encryptedSavedObjects.encryptionKey: 0c4fb61f013d771f43d321e5b2484f4d
-xpack.reporting.encryptionKey: 369ecfa55ee4b9e8c3d5481c6589287a
-xpack.security.encryptionKey: 944c9b01e335cf7eebcda4413797f494
+# Encryption keys are generated at startup by the setup_kibana_keys service
+# and appended to this config file. See scripts/generate-kibana-keys.sh.
 
 # Other xpack settings
 xpack.profiling.enabled: true

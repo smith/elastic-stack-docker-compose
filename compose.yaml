@@ -25,6 +25,8 @@ configs:
     file: scripts/create-api-key.sh
   create-certs.sh:
     file: scripts/create-certs.sh
+  generate-kibana-keys.sh:
+    file: scripts/generate-kibana-keys.sh
   elasticsearch.yml:
     file: config/elasticsearch.yml
   kibana.yml:
@@ -107,23 +109,30 @@ services:
       - esdata:/usr/share/elasticsearch/data
       - eslogs:/usr/share/elasticsearch/logs
   kibana:
-    # TODO generate encryption keys
+    command: >
+      sh -c '
+        cp /usr/share/kibana/config/kibana.yml.base /usr/share/kibana/config/kibana.yml &&
+        cat /etc/elastic/kibana_encryption_keys.yml >> /usr/share/kibana/config/kibana.yml &&
+        /usr/local/bin/kibana-docker
+      '
     configs:
       - source: kibana.yml
-        target: /usr/share/kibana/config/kibana.yml
+        target: /usr/share/kibana/config/kibana.yml.base
       - source: node.options
         target: /usr/share/kibana/config/node.options
     container_name: kibana
     depends_on:
       elasticsearch:
         condition: service_healthy
+      setup_kibana_keys:
+        condition: service_completed_successfully
       setup_kibana_user:
         condition: service_completed_successfully
     develop:
       watch:
         - action: sync+restart
           path: config/kibana.yml
-          target: /usr/share/kibana/config/kibana.yml
+          target: /usr/share/kibana/config/kibana.yml.base
     environment:
       - ELASTICSEARCH_HOSTS=https://elasticsearch:${ES_PORT}
       - ELASTICSEARCH_PASSWORD=${ELASTIC_PASSWORD}
@@ -142,6 +151,7 @@ services:
     restart: unless-stopped
     volumes:
       - certs:/usr/share/kibana/config/certs
+      - etc:/etc/elastic
       - kibana_data:/usr/share/kibana/data
       - kibana_logs:/usr/share/kibana/logs
   otelcol:
@@ -243,6 +253,18 @@ services:
     command: bash bin/set-kibana-system-user-password.sh
     volumes:
       - certs:/usr/share/elasticsearch/config/certs
+  setup_kibana_keys:
+    command: bash /bin/generate-kibana-keys.sh
+    configs:
+      - mode: 0700
+        source: generate-kibana-keys.sh
+        target: /bin/generate-kibana-keys.sh
+    container_name: "setup_kibana_keys"
+    hostname: host.docker.internal
+    image: pnnlmiscscripts/curl-jq
+    user: "0"
+    volumes:
+      - etc:/etc/elastic
   setup_universal_profiling:
     scale: 0
     configs:
