@@ -35,8 +35,6 @@ configs:
     file: config/otelcol/otelcol.yml
   set-kibana-system-user-password.sh:
     file: scripts/set-kibana-system-user-password.sh
-  setup-eis.sh:
-    file: scripts/setup-eis.sh
   initialize-universal-profiling.sh:
     file: scripts/initialize-universal-profiling.sh
   pf-elastic-collector.yml:
@@ -86,7 +84,6 @@ services:
     environment:
       - ELASTIC_PASSWORD
       - cluster.name="${ES_CLUSTER_NAME}"
-      - xpack.inference.elastic.url=${EIS_GATEWAY_URL:-}
       - xpack.license.self_generated.type="${ES_LICENSE}"
     healthcheck:
       interval: 2s
@@ -264,26 +261,6 @@ services:
     hostname: host.docker.internal
     image: pnnlmiscscripts/curl-jq
     command: bash bin/initialize-universal-profiling.sh
-    volumes:
-      - certs:/usr/share/elasticsearch/config/certs
-  setup_eis:
-    profiles: [eis]
-    command: bash /bin/setup-eis.sh
-    configs:
-      - mode: 0700
-        source: setup-eis.sh
-        target: /bin/setup-eis.sh
-    container_name: "setup_eis"
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
-    environment:
-      - ELASTIC_PASSWORD
-      - ES_PORT
-      - EIS_API_KEY
-    hostname: host.docker.internal
-    image: pnnlmiscscripts/curl-jq
-    user: "0"
     volumes:
       - certs:/usr/share/elasticsearch/config/certs
   profiling-collector:
