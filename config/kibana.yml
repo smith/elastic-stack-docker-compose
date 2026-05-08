@@ -204,23 +204,21 @@ logging.loggers:
 # https://github.com/elastic/kibana/issues/192624
 # xpack.fleet.internal.registry.kibanaVersionCheckEnabled: false
 
-discover.experimental.enabledProfiles:
-  - observability-metrics-data-source-profile
+
+# Feature flag overrides
+feature_flags.overrides: {}
+
+telemetry.banner: false
 
 # Advanced Settings overrides
+uiSettings.globalOverrides:
+  hideAnnouncements: true
 uiSettings.overrides:
   defaultRoute: /app/discover#/?_g=()&_a=(dataSource:(type:esql),filters:!(),query:(esql:'TS%20metrics*'))
   hideAnnouncements: true
   observability:enableInspectEsQueries: true
-  observability:streamsEnableAttachments: true
-  observability:streamsEnableContentPacks: true
   showSpaceSolutionTour: false
   theme:darkMode: system
-  workflows:ui:enabled: true
-
-# Feature flag overrides
-feature_flags.overrides:
-  discover.cascadeLayoutEnabled: true
 
 # Encryption settings
 xpack.encryptedSavedObjects.encryptionKey: 0c4fb61f013d771f43d321e5b2484f4d
