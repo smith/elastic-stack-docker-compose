@@ -173,6 +173,7 @@ services:
       - ELASTIC_PASSWORD
       - ES_PORT
       - KIBANA_PORT
+      - OTEL_COLLECTOR_HOST
       - OTEL_COLLECTOR_PORT_GRPC
       - OTEL_COLLECTOR_PORT_HTTP
       - OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=delta # Avoids "dropping cumulative temporality histogram" warnings

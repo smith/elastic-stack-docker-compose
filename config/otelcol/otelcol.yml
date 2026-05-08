@@ -68,13 +68,13 @@ receivers:
   otlp/fromsdk:
     protocols:
       grpc:
-        endpoint: otelcol:${env:OTEL_COLLECTOR_PORT_GRPC}
+        endpoint: ${env:OTEL_COLLECTOR_HOST}:${env:OTEL_COLLECTOR_PORT_GRPC}
       http:
         cors:
           allowed_origins:
             - "http://*"
             - "https://*"
-        endpoint: otelcol:${env:OTEL_COLLECTOR_PORT_HTTP}
+        endpoint: ${env:OTEL_COLLECTOR_HOST}:${env:OTEL_COLLECTOR_PORT_HTTP}
 # [Processors](https://github.com/open-telemetry/opentelemetry-collector/tree/main/processor#readme)
 processors: {}
 # [Exporters](https://github.com/open-telemetry/opentelemetry-collector/tree/main/exporter#readme)
